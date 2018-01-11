@@ -1,0 +1,47 @@
+#main_page_nav {
+    height : 100px
+}
+
+#sidebar {
+        min-width: 250px;
+        max-width: 250px;
+        height: 100vh;}
+.left {
+
+        margin-top: 120px;
+        margin-left:0px;
+        position: absolute;
+        box-sizing: border-box;
+        width: 200px;
+        height: 100%;
+        background: #FFFFFF bottom;}
+
+.right {
+        margin-top: 120px;
+        box-sizing: border-box;
+        float: left;
+        box-sizing: border-box;
+        padding-left: 200px;
+        overflow-y: hidden;
+        overflow-x: hidden;
+
+        color: #0056b3;
+        min-width: 100%;
+        min-height: 500px;}
+.introduction_text {
+        text-align: center;
+        color: #0b2e13;
+
+}
+[hidden] {
+  display: none !important;
+}
+
+
+
+
+
+
+
+
+

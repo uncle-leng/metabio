@@ -1,0 +1,146 @@
+
+{% load staticfiles %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="stylesheet" href="{% static 'css/bootstrap.min.css'%} ">
+    <link rel="stylesheet" href="{% static 'css/bootstrap-grid.min.css' %}">
+    <link rel="stylesheet" href="{% static 'css/main_page.css' %}">
+    <meta charset="UTF-8">
+    <script type="text/javascript" src="../static/js/echarts.js"></script>
+    <script type="text/javascript" src="../static/js/jquery-3.2.1.js"></script>
+    <title>Title</title>
+</head>
+<body>
+<select id="algorithm">
+    <option value="IS Normalisation" selected="selected">IS Normalisation</option>
+    <option value="IS + Reagent Blank Subtraction">IS + Reagent Blank Subtraction</option>
+    <option value="IS + Reagent Blank Subtraction + Concentration">IS + Reagent Blank Subtraction + Concentration</option>
+</select>
+<select id="dataX">
+    <option value="IS">IS</option>
+    <option value="Concentration">Concentration</option>
+    <option value="Acetate">Acetate</option>
+    <option value="Propionate">Propionate</option>
+    <option value="Isobutyrate">Isobutyrate</option>
+    <option value="Butyrate">Bytyrate</option>
+
+</select>
+<select id="dataY">
+    <option value="Concentration">Concentration</option>
+    <option value="IS">IS</option>
+    <option value="Acetate">Acetate</option>
+    <option value="Propionate">Propionate</option>
+    <option value="Isobutyrate">Isobutyrate</option>
+    <option value="Butyrate">Bytyrate</option>
+
+                    </select>
+
+<div id="chart" style="width: 600px; height: 400px; margin-left: auto; margin-right: auto"></div>
+<script type="text/javascript">
+    var myChart = echarts.init(document.getElementById('chart'));
+    $(function() {
+        var result_data = JSON.parse(window.sessionStorage.getItem("result_data"));
+        var algorithm = $('#algorithm').val();
+        var dataX = $('#dataX').val();
+        var dataY = $('#dataY').val();
+        draw_chart(algorithm, dataX, dataY, result_data);
+
+        $('#algorithm').on('change', function() {
+            algorithm = $(this).val();
+            //alert(algorithm);
+            draw_chart(algorithm, dataX, dataY, result_data);
+        });
+        $('#dataX').on('change', function() {
+            dataX = $(this).val();
+            draw_chart(algorithm, dataX, dataY, result_data);
+        });
+        $('#dataY').on('change', function() {
+            dataY = $(this).val();
+            draw_chart(algorithm, dataX, dataY, result_data);
+        });
+
+    });
+
+    function get_length(obj) {
+        var size = 0;
+        for (key in obj) {
+            if (obj.hasOwnProperty(key)) {
+                size ++;
+            }
+        }
+        return size;
+    }
+
+    function sortXAxis(dataX, dataY) {
+        var tmp = new Array();
+        for (var i = 0; i < dataX.length; i++) {
+            tmp[dataX[i]] = dataY[i];
+        }
+        dataX.sort();
+        for (var j = 0; j < dataY.length; j++) {
+            dataY[j] = tmp[dataX[j]];
+        }
+    }
+
+
+
+
+    function draw_chart(algorithm, dataX, dataY, originData) {
+        var hData = [];
+                var vData = [];
+                var workbook;
+
+                if (algorithm == 'IS Normalisation') {
+                    workbook = originData[1];
+                }
+                else if (algorithm == 'IS + Reagent Blank Subtraction') {
+                    workbook = originData[3];
+                }
+                else if (algorithm == 'IS + Reagent Blank Subtraction + Concentration') {
+                    workbook = originData[5];
+                }
+                console.log(get_length(workbook[dataX]));
+                for (var i = 0; i < get_length(workbook[dataX]); i++) {
+                    hData.push(workbook[dataX][i]);
+                    //console.log(hData);
+                }
+                for (var j = 0; j < get_length(workbook[dataY]); j++) {
+                    vData.push(workbook[dataY][j]);
+                    //console.log(vData);
+                }
+
+                sortXAxis(hData, vData);
+
+                var option = {
+                    title: {
+                        text: ''
+                    },
+
+                    xAxis: {
+                        type: 'category',
+                        boundaryGap: false,
+                        data: hData
+                    },
+                    yAxis: {
+                        type: 'value'
+                    },
+                    series: [{
+                        name: 'Concentration',
+                        type: 'scatter',
+                        data: vData
+                    }],
+                    tooltip: {
+                        trigger: 'item',
+                        triggerOn: 'mousemove',
+                        showContent: true
+                    }
+                };
+
+                myChart.setOption(option);
+
+    }
+
+                    </script>
+</body>
+</html>
