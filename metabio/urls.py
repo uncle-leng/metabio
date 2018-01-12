@@ -24,7 +24,6 @@ urlpatterns = [
     path('download/', views.download),
     path('download_sample/', views.download_sample),
     path('show_graph/', views.show_graph),
-    path('draw_graph/', views.draw_graph),
     path('show_result/', views.show_result),
     path('test_page/', views.test_page)
 ]

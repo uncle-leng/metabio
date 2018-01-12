@@ -40,7 +40,6 @@ def upload(request):
                     for eachline in upload_file:
                         f.write(eachline)
                     f.close()
-
                 generate_output('./tmp_input.csv', 'tmp_output.xlsx')
                 transfer_to_inputjson('./tmp_input.csv', './tmp_input_json.json')
                 with open('./tmp_input_json.json', 'rb') as f:
@@ -66,19 +65,20 @@ def upload(request):
                     outputjsonfile.save()
                     json_pk = str(outputjsonfile.pk)
                     f.close()
+
                 os.remove('./tmp_output.json')
                 os.remove('./tmp_input.csv')
                 os.remove('./tmp_output.xlsx')
                 os.remove('./tmp_input_json.json')
-            except RuntimeError:
-                return render(request, 'main_page.html', {'form': form, 'typeError': True, 'downloadBtn': False, 'graph': False})
+            except:
+                return render(request, 'main_page.html', {'form': form, 'typeError': True, 'graph': False})
 
-            return render(request, 'main_page.html', {'form': form, 'typeError': False, 'downloadBtn': True, 'download_pk': download_pk, 'json_pk': json_pk, 'input_json_pk': input_json_pk, 'graph': True})
+            return render(request, 'main_page.html', {'form': form, 'typeError': False, 'download_pk': download_pk, 'input_json_pk': input_json_pk, 'graph': True})
         else:
-            return render(request, 'main_page.html', {'form': form, 'typeError': True, 'downloadBtn': False, 'graph': False})
+            return render(request, 'main_page.html', {'form': form, 'typeError': True, 'graph': False})
     else:
         form = UploadFileForm()
-    return render(request, 'main_page.html', {'form': form, 'typeError': False, 'downloadBtn': False, 'graph': False})
+    return render(request, 'main_page.html', {'form': form, 'typeError': False, 'graph': False})
 
 
 
@@ -123,12 +123,7 @@ def show_graph(request):
     input_json_file = InputJSON.objects.get(pk=int(input_json_pk)).input_json
     return HttpResponse(input_json_file)
 
-def draw_graph(request):
 
-
-    json_pk = request.GET.get('json_pk', None)
-    json_file = JSONFile.objects.get(pk=int(json_pk)).JSON_file
-    return HttpResponse(json_file)
 
 def show_result(request):
 
@@ -144,9 +139,12 @@ def show_result(request):
     with open('./result_json.json', 'r') as f:
         response = json.load(f)
     f.close()
-    os.remove('./result_csv.csv')
-    os.remove('./result_xlsx.xlsx')
-    os.remove('./result_json.json')
+    if os.path.isfile('./result_csv.csv'):
+        os.remove('./result_csv.csv')
+    if os.path.isfile('./result_xlsx.xlsx'):
+        os.remove('./result_xlsx.xlsx')
+    if os.path.isfile('./result_json.json'):
+        os.remove('./result_json.json')
 
     return HttpResponse(json.dumps(response))
 

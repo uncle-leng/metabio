@@ -26,7 +26,7 @@
             <div class="left">
       <!--边栏内容-->
                 <div class="form-group">
-                    <span class="h3">upload file</span>
+                    <!--<span class="h3">upload file</span>-->
                     <form method="post" enctype="multipart/form-data">
                         {% csrf_token %}
                         <p>
@@ -47,24 +47,13 @@
                     <input type="text" value="download_sample" name="download_sample" style="display: none">
                     <input type="submit" value="download sample file" class="btn btn-warning">
                 </form>
-                {% if downloadBtn %}
-                    <form name="download" method="post">
-                        {% csrf_token %}
-                        <input type="text" value={{ download_pk }} name="download_pk" style="display: none">
-                        <input type="submit" class="btn btn-danger" value="download result">
-                    </form>
-
-                {% endif %}
-
-
-
 
                 <input type="button" id="show_result" class="btn btn-danger" value="show result">
 
 
             </div>
             <div class="right" style="color: #1b1e21">
-      <!--主体内容-->
+
                 {% if not graph %}
                     <h1 class="introduction_text">Introduction</h1>
                     <h2 class="introduction_text">lorem epsum</h2>

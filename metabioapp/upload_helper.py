@@ -2,6 +2,7 @@ from django.core.exceptions import ValidationError
 import xlrd
 import json
 import csv
+import os
 from .new_conc import generate_output
 
 def valid_file_type(value):
@@ -57,25 +58,32 @@ def transfer_to_inputjson(input_path, output_path):
 
 def generate_filtered_input(input_path, selected):
     res = []
+
     with open(input_path, 'r') as f:
         reader = csv.reader(f)
         rows = [row for row in reader]
         for i in range(len(rows)):
-            if (str(i-1) not in selected) or (not selected[str(i-1)]):
+            #if (str(i-1) not in selected) or (not selected[str(i-1)]):
+            if (str(i-1) in selected) and (selected[str(i-1)]):
                 res.append(rows[i])
             else:
                 continue
         f.close()
     return json.dumps(res)
 
+
 def generate_filtered_output(input_file, output_path):
+    try:
+        outfile = open(output_path, 'w')
+        writer = csv.writer(outfile)
+        for row in json.loads(input_file):
+            writer.writerow(row)
+        outfile.close()
+    except:
+        if os.path.isfile(output_path):
+            os.remove(output_path)
 
-    outfile = open(output_path, 'w')
-    writer = csv.writer(outfile)
-    for row in json.loads(input_file):
-        writer.writerow(row)
 
-    outfile.close()
 
 
 

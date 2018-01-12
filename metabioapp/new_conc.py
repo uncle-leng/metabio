@@ -3,6 +3,7 @@ import numpy
 import statistics
 import itertools
 import xlsxwriter
+import os
 
 
 def get_groups(filename):
@@ -83,6 +84,8 @@ def subtract_reg(metlist):
         for i in range(1, size):  # cycling through the number of samples
             if metlist[i][2] == 'R':
                 Reg_li.append(metlist[i][j])
+            #else:                   # added by ruobing
+                #Reg_li.append(0)    # added by ruobing
         Reg_avg = statistics.mean(Reg_li)
 
         Sub_li = []
@@ -261,21 +264,28 @@ def write_data(workbook, reader, text):
 
 
 def generate_output(input_path, output_path):
-    workbook = xlsxwriter.Workbook(output_path)
-    write_rawdata(workbook, input_path)
-    groups = get_groups(input_path)
-    groups = group_count(input_path, groups)
-    isnorm = is_normalise(input_path)
-    write_data(workbook, isnorm[0], "IS Normalised Data")
-    stats(isnorm[0], groups, workbook, "CVs after Internal Standard Normalisation")
-    reg_sub_li = subtract_reg(isnorm[0])
-    write_data(workbook, reg_sub_li, "IS Normalised, Reagent Blank Subtracted Data")
-    stats(reg_sub_li, groups, workbook, "CVs after Internal standard Normalisation and Reagent Blank Subtraction")
-    conc_li = linreg(reg_sub_li)
-    fin_conc_val = conc_cal(reg_sub_li, conc_li)
-    write_data(workbook, fin_conc_val, "IS Normalised, Reagent Blank Subtracted CONCENTRATION Data")
-    stats(fin_conc_val, groups, workbook, "CVs of Concentrations after Internal standard Normalisation and Reagent Blank Subtraction")
-    workbook.close()
+    try:
+        workbook = xlsxwriter.Workbook(output_path)
+        write_rawdata(workbook, input_path)
+        groups = get_groups(input_path)
+        groups = group_count(input_path, groups)
+        isnorm = is_normalise(input_path)
+        write_data(workbook, isnorm[0], "IS Normalised Data")
+        stats(isnorm[0], groups, workbook, "CVs after Internal Standard Normalisation")
+        reg_sub_li = subtract_reg(isnorm[0])
+        write_data(workbook, reg_sub_li, "IS Normalised, Reagent Blank Subtracted Data")
+        stats(reg_sub_li, groups, workbook, "CVs after Internal standard Normalisation and Reagent Blank Subtraction")
+        conc_li = linreg(reg_sub_li)
+        fin_conc_val = conc_cal(reg_sub_li, conc_li)
+        write_data(workbook, fin_conc_val, "IS Normalised, Reagent Blank Subtracted CONCENTRATION Data")
+        stats(fin_conc_val, groups, workbook, "CVs of Concentrations after Internal standard Normalisation and Reagent Blank Subtraction")
+        workbook.close()
+    except Exception as e:
+        print(e)
+        if os.path.isfile(input_path):
+            os.remove(input_path)
+        if os.path.isfile(output_path):
+            os.remove(output_path)
 
 
 
