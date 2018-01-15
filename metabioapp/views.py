@@ -71,14 +71,14 @@ def upload(request):
                 os.remove('./tmp_output.xlsx')
                 os.remove('./tmp_input_json.json')
             except:
-                return render(request, 'main_page.html', {'form': form, 'typeError': True, 'graph': False})
+                return render(request, 'main_page.html', {'form': form, 'typeError': True, 'graph': False, 'show_result': False})
 
-            return render(request, 'main_page.html', {'form': form, 'typeError': False, 'download_pk': download_pk, 'input_json_pk': input_json_pk, 'graph': True})
+            return render(request, 'main_page.html', {'form': form, 'typeError': False, 'download_pk': download_pk, 'input_json_pk': input_json_pk, 'graph': True, 'show_result': True})
         else:
-            return render(request, 'main_page.html', {'form': form, 'typeError': True, 'graph': False})
+            return render(request, 'main_page.html', {'form': form, 'typeError': True, 'graph': False, 'show_result': False})
     else:
         form = UploadFileForm()
-    return render(request, 'main_page.html', {'form': form, 'typeError': False, 'graph': False})
+    return render(request, 'main_page.html', {'form': form, 'typeError': False, 'graph': False, 'show_result': False})
 
 
 

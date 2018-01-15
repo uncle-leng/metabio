@@ -47,8 +47,9 @@
                     <input type="text" value="download_sample" name="download_sample" style="display: none">
                     <input type="submit" value="download sample file" class="btn btn-warning">
                 </form>
-
-                <input type="button" id="show_result" class="btn btn-danger" value="show result">
+                {% if show_result %}
+                    <input type="button" id="show_result" class="btn btn-danger" value="show result">
+                {% endif %}
 
 
             </div>
@@ -60,26 +61,32 @@
                 {% endif %}
 
                 {% if graph %}
+                    <div class="container">
+                        <div class="row">
+                            <div class="col-md-2 offset-6">
+                                <select id="dataX" class="custom-select">
+                                    <option value="IS">IS</option>
+                                    <option value="Concentration">Concentration</option>
+                                    <option value="Acetate">Acetate</option>
+                                    <option value="Propionate">Propionate</option>
+                                    <option value="Isobutyrate">Isobutyrate</option>
+                                    <option value="Butyrate">Bytyrate</option>
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <select id="dataY" class="custom-select">
+                                    <option value="Concentration">Concentration</option>
+                                    <option value="IS">IS</option>
+                                    <option value="Acetate">Acetate</option>
+                                    <option value="Propionate">Propionate</option>
+                                    <option value="Isobutyrate">Isobutyrate</option>
+                                    <option value="Butyrate">Bytyrate</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
 
-                    <select id="dataX">
-                        <option value="IS">IS</option>
-                        <option value="Concentration">Concentration</option>
-                        <option value="Acetate">Acetate</option>
-                        <option value="Propionate">Propionate</option>
-                        <option value="Isobutyrate">Isobutyrate</option>
-                        <option value="Butyrate">Bytyrate</option>
-                    </select>
-                    <select id="dataY">
-                        <option value="Concentration">Concentration</option>
-                        <option value="IS">IS</option>
-                        <option value="Acetate">Acetate</option>
-                        <option value="Propionate">Propionate</option>
-                        <option value="Isobutyrate">Isobutyrate</option>
-                        <option value="Butyrate">Bytyrate</option>
-
-                    </select>
-
-                    <div id="chart" style="width: 600px; height: 400px;"></div>
+                    <div id="chart" style="width: 600px; height: 400px; margin-left: auto; margin-right: auto"></div>
                     <script type="text/javascript">
                         var myChart = echarts.init(document.getElementById('chart'));
                         var selected = {};
