@@ -17,7 +17,7 @@ def mainpage(request):
     return render(request, 'main_page.html')
 
 def testpage(request):
-    return render(request, 'test_page.html')
+    return render(request, 'result_page.html')
 
 def upload(request):
 
@@ -92,7 +92,6 @@ def download(request):
                 break
     for each in messages.get_messages(request):
         pk = each
-
     output_file = DownloadFile.objects.get(pk=int(pk.message))
     download_file_name = output_file.download_file
     response = StreamingHttpResponse(file_iterator(download_file_name))
@@ -148,8 +147,8 @@ def show_result(request):
 
     return HttpResponse(json.dumps(response))
 
-def test_page(request):
-    return render(request, 'test_page.html')
+def result_page(request):
+    return render(request, 'result_page.html')
 
 
 

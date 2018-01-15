@@ -86,7 +86,7 @@
                         </div>
                     </div>
 
-                    <div id="chart" style="width: 600px; height: 400px; margin-left: auto; margin-right: auto"></div>
+                    <div id="chart" style="width: 800px; height: 400px; margin-left: auto; margin-right: auto"></div>
                     <script type="text/javascript">
                         var myChart = echarts.init(document.getElementById('chart'));
                         var selected = {};
@@ -141,7 +141,7 @@
                                         //var new_window = window.open("./test_page.html");
                                         //new_window.result_data = result;
                                         window.sessionStorage.setItem("result_data", JSON.stringify(result));
-                                        window.location.href = './test_page/';
+                                        window.location.href = './result_page/';
 
 
                                     },
@@ -218,13 +218,21 @@
                             },
 
                             xAxis: {
+                                name: $('#dataX').val(),
                                 type: 'category',
                                 boundaryGap: false,
                                 data: get_clear_hData(hData)
 
                             },
                             yAxis: {
+                                name: $('#dataY').val(),
                                 type: 'value'
+                            },
+
+                            dataZoom: {
+                                show: true,
+                                realtime: true,
+                                height: 20
                             },
 
                             series: [{
@@ -251,7 +259,11 @@
                             tooltip: {
                                 trigger: 'item',
                                 triggerOn: 'mousemove',
-                                showContent: true
+                                //showContent: true,
+                                formatter: function (para) {
+                                    return option.xAxis.name + ':' + para.name + '<br/>'
+                                         + option.yAxis.name + ':' + para.data + '<br/>';
+                                }
                                 }
                             };
                             option.series[0].data = filter_selected_data(hData, vData, selected);
@@ -293,16 +305,9 @@
 
 
 
-
-
-
-
-
     <nav class="navbar fixed-bottom navbar-light bg-light">
         <a class="navbar-brand" href="#">Contact: Dr. Saravanan Dayalan, sdayalan@unimelb.edu.au</a>
     </nav>
-
-
 
 
 
