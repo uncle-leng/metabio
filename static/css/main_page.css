@@ -20,7 +20,7 @@
         margin-top: 120px;
         box-sizing: border-box;
         float: left;
-        box-sizing: border-box;
+        text-align: center;
         padding-left: 200px;
         overflow-y: hidden;
         overflow-x: hidden;
@@ -36,7 +36,9 @@
   display: none !important;
 }
 
-
+#try {
+        margin: 0 auto;
+}
 
 
 

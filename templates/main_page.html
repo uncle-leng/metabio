@@ -8,6 +8,8 @@
     <meta charset="UTF-8">
     <script type="text/javascript" src="../static/js/echarts.js"></script>
     <script type="text/javascript" src="../static/js/jquery-3.2.1.js"></script>
+    <script type="text/javascript" src="../static/js/ecStat.js"></script>
+    <script type="text/javascript" src="../static/js/regression.js"></script>
     <title>Title</title>
 </head>
 <body>
@@ -45,10 +47,11 @@
                 <form name="download_sample" method="post">
                     {% csrf_token %}
                     <input type="text" value="download_sample" name="download_sample" style="display: none">
-                    <input type="submit" value="download sample file" class="btn btn-warning">
+                    <input type="submit" id="download_sample" value="download sample file" class="btn btn-warning">
                 </form>
                 {% if show_result %}
-                    <input type="button" id="show_result" class="btn btn-danger" value="show result">
+                    <input type="button" id="show_result" value="show result" class="btn btn-danger">
+                </form>
                 {% endif %}
 
 
@@ -58,15 +61,20 @@
                 {% if not graph %}
                     <h1 class="introduction_text">Introduction</h1>
                     <h2 class="introduction_text">lorem epsum</h2>
+                     <form name="try" method="post">
+                    {% csrf_token %}
+                    <input type="text" value="try" name="try" style="display: none">
+                    <input type="submit" value="try it out !" class="btn btn-warning">
                 {% endif %}
 
                 {% if graph %}
+                    <!--
                     <div class="container">
                         <div class="row">
                             <div class="col-md-2 offset-6">
                                 <select id="dataX" class="custom-select">
-                                    <option value="IS">IS</option>
                                     <option value="Concentration">Concentration</option>
+                                    <option value="IS">IS</option>
                                     <option value="Acetate">Acetate</option>
                                     <option value="Propionate">Propionate</option>
                                     <option value="Isobutyrate">Isobutyrate</option>
@@ -75,8 +83,8 @@
                             </div>
                             <div class="col-md-2">
                                 <select id="dataY" class="custom-select">
-                                    <option value="Concentration">Concentration</option>
                                     <option value="IS">IS</option>
+                                    <option value="Concentration">Concentration</option>
                                     <option value="Acetate">Acetate</option>
                                     <option value="Propionate">Propionate</option>
                                     <option value="Isobutyrate">Isobutyrate</option>
@@ -85,69 +93,67 @@
                             </div>
                         </div>
                     </div>
+                    -->
 
                     <div id="chart" style="width: 800px; height: 400px; margin-left: auto; margin-right: auto"></div>
                     <script type="text/javascript">
-                        var myChart = echarts.init(document.getElementById('chart'));
+                        var myChart = echarts.init(document.getElementById('chart'), '', {devicePixelRatio: 2});
                         var selected = {};
                         var hData = [];
                         var vData = [];
+                        var two_dimen_data = [];
                         var option;
 
                         myChart.on('click', function(para) {
-                                        var origin_index = hData[para.dataIndex][0];
-                                        if (!selected.hasOwnProperty(origin_index)) {
-                                            selected[origin_index] = true;
-                                        }
-                                        else {
-                                            selected[origin_index] = !selected[origin_index];
-                                        }
-                                        option = get_option(hData, vData, selected);
-                                        myChart.setOption(option);
+                            var origin_index = hData[para.dataIndex][0];
+                            if (!selected.hasOwnProperty(origin_index)) {
+                                selected[origin_index] = true;
+                            }
+                            else {
+                                selected[origin_index] = !selected[origin_index];
+                            }
+                            var tmp = [];
+                            for (var i = 0; i < hData.length; i++) {
+                                if (!selected.hasOwnProperty(hData[i][0]) || !selected[hData[i][0]]) {
+                                    tmp.push([hData[i][1], vData[i]]);
+                                }
+                            }
+                            two_dimen_data = tmp;
+                            option = get_option(hData, vData, two_dimen_data, selected);
+                            myChart.setOption(option);
 
-                                    });
+                        });
+                        $('#show_result').on('click', function() {
+                            console.log(selected);
+                            $.ajax({
+                                type: 'POST',
+                                async: true,
+                                traditional: true,
+                                url: '../show_result/',
+                                dataType: 'json',
+                                data: {'selected': JSON.stringify(selected),
+                                        'input_json_pk': {{ input_json_pk }},
+                                        'csrfmiddlewaretoken': '{{ csrf_token }}'},
+                                success: function(result) {
+                                    window.sessionStorage.setItem("result_data", JSON.stringify(result));
+                                    window.sessionStorage.setItem('selected', JSON.stringify(selected));
+                                    window.sessionStorage.setItem('input_json_pk', {{ input_json_pk }});
+                                    window.location.href = './result_page/';
+
+
+                                },
+                                error: function() {alert('can not show result!!!')}
+                            })
+                        });
 
                         $(function () {
-                            //var dataX = 'IS';
-                            //var dataY = 'Concentration';
-                            var dataX = $('#dataX').val();
-                            var dataY = $('#dataY').val();
-                            show_chart(dataX, dataY, hData, vData);
-
-                            $('#dataX').on('change', function() {
-                                hData = [];
-                                vData = [];
-                                dataX = $(this).val();
-                                show_chart(dataX, dataY, hData, vData);
-                            });
-                            $('#dataY').on('change', function() {
-                                hData = [];
-                                vData = [];
-                                dataY = $(this).val();
-                                show_chart(dataX, dataY, hData, vData);
-                            });
-                            $('#show_result').on('click', function() {
-                                console.log(selected);
-                                $.ajax({
-                                    type: 'POST',
-                                    async: true,
-                                    traditional: true,
-                                    url: '../show_result/',
-                                    dataType: 'json',
-                                    data: {'selected': JSON.stringify(selected),
-                                            'input_json_pk': {{ input_json_pk }},
-                                            'csrfmiddlewaretoken': '{{ csrf_token }}'},
-                                    success: function(result) {
-                                        //var new_window = window.open("./test_page.html");
-                                        //new_window.result_data = result;
-                                        window.sessionStorage.setItem("result_data", JSON.stringify(result));
-                                        window.location.href = './result_page/';
-
-
-                                    },
-                                    error: function() {alert('can not show result!!!')}
-                                })
-                            })
+                            var dataX = 'Concentration';
+                            var dataY = 'IS';
+                            if ('{{ try }}' == 'False'){
+                                show_chart(dataX, dataY, hData, vData);}
+                            else {
+                                show_try_chart(dataX, dataY, hData, vData);
+                            }
                         });
 
                         function get_length(obj) {
@@ -210,31 +216,39 @@
                             }
                             return res;
                         }
-                        function get_option(hData, vData, selected) {
+                        function get_option(hData, vData, two_dimen_data, selected) {
+                            var myRegression = regression.linear(two_dimen_data);
+                            var regression_points = [];
+                            var k = myRegression.equation[0];
+                            var b = myRegression.equation[1];
+                            var clear_hData = get_clear_hData(hData);
 
+                            for (var i = 0; i < clear_hData.length; i++) {
+                                regression_points.push(k * clear_hData[i] + b);
+                            }
                             var option = {
                             title: {
                                 text: ''
                             },
 
                             xAxis: {
-                                name: $('#dataX').val(),
+                                name: 'Concentration',
                                 type: 'category',
                                 boundaryGap: false,
                                 data: get_clear_hData(hData)
 
                             },
                             yAxis: {
-                                name: $('#dataY').val(),
+                                name: 'IS',
                                 type: 'value'
                             },
-
+                            /*
                             dataZoom: {
                                 show: true,
                                 realtime: true,
                                 height: 20
                             },
-
+                            */
                             series: [{
                                 name: 'Concentration',
                                 type: 'scatter',
@@ -244,6 +258,7 @@
                                         color: '#d94e5d'
                                     }
                                 }
+
                             },
                                 {
                                 name: 'Concentration',
@@ -254,21 +269,76 @@
                                         color: '#eac736'
                                     }
                                 }
+
+                                },
+
+
+                               {
+                                name: 'line',
+                                type: 'line',
+                                showSymbol: false,
+                                data: myRegression.points,
+                                markPoint: {
+                                    itemStyle: {
+                                        normal: {
+                                            color: 'transparent'
+                                        }
+                                    },
+                                    label: {
+                                        normal: {
+                                            show: true,
+                                            position: 'left',
+                                            formatter: myRegression.string,
+                                            textStyle: {
+                                                color: '#333',
+                                                fontSize: 14
+                                            }
+                                        }
+                                    },
+                                    data: [{
+                                        coord: myRegression.points[myRegression.points.length - 1]
+                                    }]
                                 }
+                            }
+
+
                             ],
                             tooltip: {
                                 trigger: 'item',
                                 triggerOn: 'mousemove',
                                 //showContent: true,
                                 formatter: function (para) {
-                                    return option.xAxis.name + ':' + para.name + '<br/>'
-                                         + option.yAxis.name + ':' + para.data + '<br/>';
+                                    return option.xAxis.name + '  :  ' + para.name + '<br/>'
+                                         + option.yAxis.name + '  :  ' + para.data + '<br/>';
                                 }
                                 }
                             };
                             option.series[0].data = filter_selected_data(hData, vData, selected);
                             option.series[1].data = filter_unselected_data(hData, vData, selected);
                             return option;
+                        }
+                        function draw_chart(originData, dataX, dataY, hData, vData) {
+                            myChart.showLoading();
+                                for (var i = 0; i < get_length(originData[dataX]); i++) {
+                                    if (originData['Group'][i] == 'S'){
+                                        hData.push(originData[dataX][i]);
+                                    }
+                                }
+                                for (var j = 0; j < get_length(originData[dataY]); j++) {
+                                    if (originData['Group'][j] == 'S') {
+                                        vData.push(originData[dataY][j]);
+                                    }
+                                }
+
+                                sortXAxis(hData, vData);
+                                for (var k = 0; k < hData.length; k++) {
+                                    if (!selected.hasOwnProperty(hData[k][0]) || !selected[hData[k][1]]){
+                                        two_dimen_data.push([hData[k][1], vData[k]]);
+                                    }
+                                }
+                                option = get_option(hData, vData, two_dimen_data, selected);
+                                myChart.hideLoading();
+                                myChart.setOption(option);
                         }
                         function show_chart(dataX, dataY, hData, vData) {
                             $.ajax({
@@ -279,23 +349,28 @@
                                 data: {
                                     'input_json_pk': {{ input_json_pk }}
                                 },
-                                success: function (originData) {
-                                    var index_dict = [];
-                                    for (var i = 0; i < get_length(originData[dataX]); i++) {
-                                        hData.push(originData[dataX][i]);
-                                    }
-                                    for (var j = 0; j < get_length(originData[dataY]); j++) {
-                                        vData.push(originData[dataY][j]);
-                                    }
-                                    sortXAxis(hData, vData, index_dict);
-                                    console.log(hData[0]);
-                                    option = get_option(hData, vData, selected);
-                                    myChart.setOption(option);
-                                },
+                                success: function(originData) {
+                                    draw_chart(originData, dataX, dataY, hData, vData);
+                                    },
                                 error: function() {
                                     alert('error!')
                                 }
                             })
+                        }
+                        function show_try_chart(dataX, dataY, hData, vData) {
+                            $.ajax({
+                                   type: 'POST',
+                                   async: true,
+                                   url: '../show_try_graph',
+                                   dataType: 'json',
+                                   data: {"try": 'true',
+                                       'csrfmiddlewaretoken': '{{ csrf_token }}'},
+                                   success: function(originData) {
+                                       draw_chart(originData, dataX, dataY, hData, vData);
+                                       $('#download_sample').click();
+                                   },
+                                   error: function() {alert("try error!")}
+                               })
                         }
                     </script>
                 {% endif %}

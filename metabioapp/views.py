@@ -1,3 +1,5 @@
+
+
 from django.shortcuts import render, HttpResponse, HttpResponseRedirect
 from django.core.files import File
 from django.http import StreamingHttpResponse
@@ -6,7 +8,7 @@ from .models import UploadFile, DownloadFile, OutputJSON, InputJSON
 from .models import UploadFileForm
 import os
 import json
-from .upload_helper import transfer_to_json, transfer_to_inputjson, generate_filtered_input, generate_filtered_output
+from .upload_helper import valid_file, transfer_to_json, transfer_to_inputjson, generate_filtered_input, generate_filtered_output
 from .new_conc import generate_output
 
 
@@ -22,6 +24,23 @@ def testpage(request):
 def upload(request):
 
     if request.method == 'POST':
+        if 'try' in request.POST:
+
+
+            with open('./static/sample_input.csv') as csvfile:
+                uploadfile = UploadFile()
+                uploadfile.upload_file = File(csvfile)
+                uploadfile.save()
+            with open('./static/sample_input_json.json') as jsonfile:
+                inputjsonfile = InputJSON()
+                inputjsonfile.upload_file = uploadfile
+                inputjsonfile.input_json = File(jsonfile)
+                inputjsonfile.save()
+
+                input_json_pk = inputjsonfile.pk
+            csvfile.close()
+            jsonfile.close()
+            return render(request, 'main_page.html', {'typeError': False, 'graph': True, 'input_json_pk': input_json_pk, 'show_result': True, 'try': True})
         if 'download_pk' in request.POST:
             messages.add_message(request, messages.INFO, request.POST['download_pk'])
             return HttpResponseRedirect('/download/')
@@ -40,6 +59,9 @@ def upload(request):
                     for eachline in upload_file:
                         f.write(eachline)
                     f.close()
+                if not valid_file('./tmp_input.csv'):
+                    return render(request, 'main_page.html',
+                                  {'form': form, 'typeError': True, 'graph': False, 'show_result': False, 'try': False})
                 generate_output('./tmp_input.csv', 'tmp_output.xlsx')
                 transfer_to_inputjson('./tmp_input.csv', './tmp_input_json.json')
                 with open('./tmp_input_json.json', 'rb') as f:
@@ -63,41 +85,21 @@ def upload(request):
                 with open('./tmp_output.json', 'rb') as f:
                     outputjsonfile.JSON_file = File(f)
                     outputjsonfile.save()
-                    json_pk = str(outputjsonfile.pk)
                     f.close()
-
                 os.remove('./tmp_output.json')
                 os.remove('./tmp_input.csv')
                 os.remove('./tmp_output.xlsx')
                 os.remove('./tmp_input_json.json')
             except:
-                return render(request, 'main_page.html', {'form': form, 'typeError': True, 'graph': False, 'show_result': False})
+                return render(request, 'main_page.html', {'form': form, 'typeError': True, 'graph': False, 'show_result': False, 'try': False})
 
-            return render(request, 'main_page.html', {'form': form, 'typeError': False, 'download_pk': download_pk, 'input_json_pk': input_json_pk, 'graph': True, 'show_result': True})
+            return render(request, 'main_page.html', {'form': form, 'typeError': False, 'input_json_pk': input_json_pk, 'graph': True, 'show_result': True, 'try': False})
         else:
-            return render(request, 'main_page.html', {'form': form, 'typeError': True, 'graph': False, 'show_result': False})
+            return render(request, 'main_page.html', {'form': form, 'typeError': True, 'graph': False, 'show_result': False, 'try': False})
     else:
         form = UploadFileForm()
-    return render(request, 'main_page.html', {'form': form, 'typeError': False, 'graph': False, 'show_result': False})
+    return render(request, 'main_page.html', {'form': form, 'typeError': False, 'graph': False, 'show_result': False, 'try': False})
 
-
-
-def download(request):
-    def file_iterator(f, chunk_size=512):
-        while True:
-            c = f.read(chunk_size)
-            if c:
-                yield c
-            else:
-                break
-    for each in messages.get_messages(request):
-        pk = each
-    output_file = DownloadFile.objects.get(pk=int(pk.message))
-    download_file_name = output_file.download_file
-    response = StreamingHttpResponse(file_iterator(download_file_name))
-    response['Content-Type'] = 'application/octet-stream'
-    response['Content-Disposition'] = 'attachment;filename="{0}"'.format(download_file_name)
-    return response
 
 
 def download_sample(request):
@@ -125,6 +127,14 @@ def show_graph(request):
 
 
 def show_result(request):
+    def file_iterator(filename, chunk_size=512):
+        with open(filename, 'rb') as f:
+            while True:
+                c = f.read(chunk_size)
+                if c:
+                    yield c
+                else:
+                    break
 
     selected = json.loads(request.POST['selected'])
     input_json_pk = request.POST['input_json_pk']
@@ -150,6 +160,42 @@ def show_result(request):
 def result_page(request):
     return render(request, 'result_page.html')
 
+
+def download(request):
+    def file_iterator(filename, chunk_size=512):
+        with open(filename, 'rb') as f:
+            while True:
+                c = f.read(chunk_size)
+                if c:
+                    yield c
+                else:
+                    break
+    selected = json.loads(request.POST['selected'])
+    input_json_pk = request.POST['input_json_pk']
+    uploadfile_id = InputJSON.objects.get(pk=int(input_json_pk)).upload_file_id
+    uploadfile_path = UploadFile.objects.get(pk=uploadfile_id).upload_file.path
+    filtered_json = generate_filtered_input(uploadfile_path, selected)
+    generate_filtered_output(filtered_json, './result_csv.csv')
+    generate_output('./result_csv.csv', './result_xlsx.xlsx')
+
+    response = StreamingHttpResponse(file_iterator('./result_xlsx.xlsx'))
+    response['Content-Type'] = 'application/octet-stream'
+    response['Content-Disposition'] = 'attachment;filename="{0}"'.format('./result_xlsx.xlsx')
+
+    '''
+    if os.path.isfile('./result_csv.csv'):
+        os.remove('./result_csv.csv')
+    if os.path.isfile('./result_xlsx.xlsx'):
+        os.remove('./result_xlsx.xlsx')
+    '''
+    return response
+
+
+def show_try_graph(request):
+    with open('./static/sample_input_json.json', 'r') as f:
+        json_response = json.load(f)
+    f.close()
+    return HttpResponse(json.dumps(json_response))
 
 
 

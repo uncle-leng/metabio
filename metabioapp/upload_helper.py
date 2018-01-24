@@ -3,11 +3,47 @@ import xlrd
 import json
 import csv
 import os
+import pandas as pd
 from .new_conc import generate_output
 
 def valid_file_type(value):
     if value.name.split('.')[-1] != 'csv':
         raise ValidationError('Invalid File Type: %(value)s', params={'value': value},)
+
+
+def is_number(s):
+    try:
+        float(s)
+        return True
+    except ValueError:
+        pass
+    return False
+
+def valid_file(file_path):
+    try:
+        num_S = 0
+        num_R = 0
+        all_data = pd.read_csv(file_path, header=None).as_matrix()
+        head = all_data[0]
+        if head[0].strip() != 'ID' or head[1].strip() != 'Concentration' or head[2].strip() != 'Group' or head[3].strip() != 'IS':
+            return False
+        for i in range(1, len(all_data)):
+            if is_number(all_data[i][0]) or not is_number(all_data[i][1]) or is_number(all_data[i][2]) or not is_number(all_data[i][3]):
+                return False
+            for j in range(4, len(all_data[0])):
+                if not is_number(all_data[i][j]):
+                    return False
+            if all_data[i][2] == 'S':
+                num_S += 1
+            if all_data[i][2] == 'R':
+                num_R += 1
+        if num_S != 0 and num_R != 0:
+            return True
+        else:
+            return False
+    except:
+        return False
+
 
 def strList_to_intList(strList):
     res = []
@@ -63,8 +99,8 @@ def generate_filtered_input(input_path, selected):
         reader = csv.reader(f)
         rows = [row for row in reader]
         for i in range(len(rows)):
-            #if (str(i-1) not in selected) or (not selected[str(i-1)]):
-            if (str(i-1) in selected) and (selected[str(i-1)]):
+            if (str(i-1) not in selected) or (not selected[str(i-1)]):
+            #if (str(i-1) in selected) and (selected[str(i-1)]):
                 res.append(rows[i])
             else:
                 continue
