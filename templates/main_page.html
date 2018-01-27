@@ -68,50 +68,50 @@
                 {% endif %}
 
                 {% if graph %}
-                    <!--
+
                     <div class="container">
                         <div class="row">
                             <div class="col-md-2 offset-6">
-                                <select id="dataX" class="custom-select">
-                                    <option value="Concentration">Concentration</option>
-                                    <option value="IS">IS</option>
-                                    <option value="Acetate">Acetate</option>
-                                    <option value="Propionate">Propionate</option>
-                                    <option value="Isobutyrate">Isobutyrate</option>
-                                    <option value="Butyrate">Bytyrate</option>
-                                </select>
-                            </div>
-                            <div class="col-md-2">
                                 <select id="dataY" class="custom-select">
+                                    <!--<option value="Concentration">Concentration</option>
                                     <option value="IS">IS</option>
-                                    <option value="Concentration">Concentration</option>
                                     <option value="Acetate">Acetate</option>
                                     <option value="Propionate">Propionate</option>
                                     <option value="Isobutyrate">Isobutyrate</option>
-                                    <option value="Butyrate">Bytyrate</option>
+                                    <option value="Butyrate">Bytyrate</option>-->
                                 </select>
                             </div>
                         </div>
                     </div>
-                    -->
+
 
                     <div id="chart" style="width: 800px; height: 400px; margin-left: auto; margin-right: auto"></div>
                     <script type="text/javascript">
                         var myChart = echarts.init(document.getElementById('chart'), '', {devicePixelRatio: 2});
-                        var selected = {};
+                        var selected = {}; //selected row
+                        var selectedPoints = {};
                         var hData = [];
                         var vData = [];
                         var two_dimen_data = [];
                         var option;
-
+                        var data;
                         myChart.on('click', function(para) {
                             var origin_index = hData[para.dataIndex][0];
+
                             if (!selected.hasOwnProperty(origin_index)) {
                                 selected[origin_index] = true;
                             }
                             else {
                                 selected[origin_index] = !selected[origin_index];
                             }
+
+                            if (! selectedPoints.hasOwnProperty(origin_index + ',' + para.seriesName)) {
+                                selectedPoints[origin_index + ',' + para.seriesName] = true;
+                            }
+                            else {
+                                selectedPoints[origin_index + ',' + para.seriesName] = !selectedPoints[origin_index + ',' + para.seriesName];
+                            }
+
                             var tmp = [];
                             for (var i = 0; i < hData.length; i++) {
                                 if (!selected.hasOwnProperty(hData[i][0]) || !selected[hData[i][0]]) {
@@ -145,17 +145,78 @@
                                 error: function() {alert('can not show result!!!')}
                             })
                         });
-
-                        $(function () {
+                        $('#dataY').on('change', function() {
+                            hData = [];
+                            vData = [];
+                            two_dimen_data = [];
                             var dataX = 'Concentration';
-                            var dataY = 'IS';
-                            if ('{{ try }}' == 'False'){
-                                show_chart(dataX, dataY, hData, vData);}
-                            else {
-                                show_try_chart(dataX, dataY, hData, vData);
-                            }
+                            var dataY = $('#dataY').val();
+                            draw_chart(data, dataX, dataY, hData, vData);
                         });
 
+                        $(function () {
+                            if ('{{ try }}' == 'False'){
+                                $.ajax({
+                                type: 'GET',
+                                async: true,
+                                url: '../show_graph',
+                                dataType: 'json',
+                                data: {
+                                    'input_json_pk': {{ input_json_pk }}
+                                },
+                                success: function(originData) {
+                                    data = originData;
+                                    var optionTag = document.getElementById('dataY');
+                                    for (var each in originData) {
+                                        if (each != 'ID' && each != 'IS' && each != 'Concentration' && each != 'Group') {
+                                            var option = document.createElement('option');
+                                            option.setAttribute('value', each);
+                                            option.setAttribute('class', 'options');
+                                            option.innerHTML = each;
+                                            optionTag.appendChild(option);
+                                            }
+                                    }
+                                    var dataX = 'Concentration';
+                                    var dataY = $('#dataY').val();
+
+                                    draw_chart(originData, dataX, dataY, hData, vData);
+                                    },
+                                    error: function() {
+                                        alert('error!')
+                                    }
+                                    })
+                            }
+                            else {
+                                $.ajax({
+                                   type: 'POST',
+                                   async: true,
+                                   url: '../show_try_graph',
+                                   dataType: 'json',
+                                   data: {"try": 'true',
+                                       'csrfmiddlewaretoken': '{{ csrf_token }}'},
+                                   success: function(originData) {
+                                       data = originData;
+                                       var optionTag = document.getElementById('dataY');
+                                       for (var each in originData) {
+                                        if (each != 'ID' && each != 'IS' && each != 'Concentration' && each != 'Group') {
+                                            var option = document.createElement('option');
+                                            option.setAttribute('value', each);
+                                            option.setAttribute('class', 'options');
+                                            option.innerHTML = each;
+                                            optionTag.appendChild(option);
+                                            }
+                                        }
+                                        var dataX = 'Concentration';
+                                        var dataY = $('#dataY').val();
+
+                                        draw_chart(originData, dataX, dataY, hData, vData);
+                                        },
+                                        error: function() {
+                                            alert('error!')
+                                        }
+                                        })
+                            }
+                            });
                         function get_length(obj) {
                             var size = 0;
                             for (key in obj) {
@@ -165,15 +226,15 @@
                             }
                             return size;
                         }
-                        function sortXAxis(dataX, dataY) {
+                        function sortXAxis(hData, vData, dataY) {
                             var tmp = new Array();
-                            for (var i = 0; i < dataX.length; i++) {
-                                dataX[i] = [i, dataX[i]];
-                                tmp[i] = dataY[i];
+                            for (var i = 0; i < hData.length; i++) {
+                                hData[i] = [i, hData[i], i.toString() + ',' + dataY];
+                                tmp[i] = vData[i];
                             }
-                            dataX.sort(sortArr);
-                            for (var j = 0; j < dataY.length; j++) {
-                                dataY[j] = tmp[dataX[j][0]];
+                            hData.sort(sortArr);
+                            for (var j = 0; j < vData.length; j++) {
+                                vData[j] = tmp[hData[j][0]];
                             }
                         }
                         function sortArr(m, n) {
@@ -188,7 +249,8 @@
                         function filter_selected_data(hData, vData, selected) {
                             var res = [];
                             for (var i = 0; i < hData.length; i++) {
-                                if (selected[hData[i][0]] == true) {
+                                //if (selected[hData[i][0]] == true) {
+                                if (selectedPoints[hData[i][2]] == true) {
                                     res.push('-');
                                 }
                                 else {
@@ -200,7 +262,8 @@
                         function filter_unselected_data(hData, vData, selected) {
                             var res = [];
                             for (var i = 0; i < hData.length; i++) {
-                                if (selected[hData[i][0]] == true){
+                                //if (selected[hData[i][0]] == true){
+                                if (selectedPoints[hData[i][2]] == true) {
                                     res.push(vData[i]);
                                 }
                                 else {
@@ -217,15 +280,21 @@
                             return res;
                         }
                         function get_option(hData, vData, two_dimen_data, selected) {
+                            /*
                             var myRegression = regression.linear(two_dimen_data);
                             var regression_points = [];
                             var k = myRegression.equation[0];
                             var b = myRegression.equation[1];
                             var clear_hData = get_clear_hData(hData);
-
                             for (var i = 0; i < clear_hData.length; i++) {
                                 regression_points.push(k * clear_hData[i] + b);
                             }
+                            */
+
+                            var myRegression = ecStat.regression('linear', two_dimen_data);
+                            myRegression.points.sort(function(a, b) {
+                                return a[0] - b[0];
+                            });
                             var option = {
                             title: {
                                 text: ''
@@ -235,11 +304,12 @@
                                 name: 'Concentration',
                                 type: 'category',
                                 boundaryGap: false,
-                                data: get_clear_hData(hData)
+                                data: get_clear_hData(hData),
+                                interval: 10
 
                             },
                             yAxis: {
-                                name: 'IS',
+                                name: $('#dataY').val(),
                                 type: 'value'
                             },
                             /*
@@ -250,7 +320,7 @@
                             },
                             */
                             series: [{
-                                name: 'Concentration',
+                                name: $('#dataY').val(),
                                 type: 'scatter',
                                 data: [],
                                 itemStyle: {
@@ -261,7 +331,7 @@
 
                             },
                                 {
-                                name: 'Concentration',
+                                name: $('#dataY').val(),
                                 type: 'scatter',
                                 data: [],
                                 itemStyle: {
@@ -286,9 +356,9 @@
                                     },
                                     label: {
                                         normal: {
-                                            show: true,
+                                            show: false,
                                             position: 'left',
-                                            formatter: myRegression.string,
+                                            formatter: myRegression.expression,
                                             textStyle: {
                                                 color: '#333',
                                                 fontSize: 14
@@ -300,7 +370,6 @@
                                     }]
                                 }
                             }
-
 
                             ],
                             tooltip: {
@@ -319,26 +388,25 @@
                         }
                         function draw_chart(originData, dataX, dataY, hData, vData) {
                             myChart.showLoading();
-                                for (var i = 0; i < get_length(originData[dataX]); i++) {
-                                    if (originData['Group'][i] == 'S'){
-                                        hData.push(originData[dataX][i]);
-                                    }
+                            for (var i = 0; i < get_length(originData[dataX]); i++) {
+                                if (originData['Group'][i] == 'S'){
+                                    hData.push(originData[dataX][i]);
                                 }
-                                for (var j = 0; j < get_length(originData[dataY]); j++) {
-                                    if (originData['Group'][j] == 'S') {
-                                        vData.push(originData[dataY][j]);
-                                    }
+                            }
+                            for (var j = 0; j < get_length(originData[dataY]); j++) {
+                                if (originData['Group'][j] == 'S') {
+                                    vData.push(originData[dataY][j]);
                                 }
-
-                                sortXAxis(hData, vData);
-                                for (var k = 0; k < hData.length; k++) {
-                                    if (!selected.hasOwnProperty(hData[k][0]) || !selected[hData[k][1]]){
-                                        two_dimen_data.push([hData[k][1], vData[k]]);
-                                    }
+                            }
+                            sortXAxis(hData, vData, dataY);
+                            for (var k = 0; k < hData.length; k++) {
+                                if (!selectedPoints.hasOwnProperty(hData[k][2]) || !selectedPoints[hData[k][2]]){
+                                    two_dimen_data.push([hData[k][1], vData[k]]);
                                 }
-                                option = get_option(hData, vData, two_dimen_data, selected);
-                                myChart.hideLoading();
-                                myChart.setOption(option);
+                            }
+                            option = get_option(hData, vData, two_dimen_data, selected);
+                            myChart.hideLoading();
+                            myChart.setOption(option);
                         }
                         function show_chart(dataX, dataY, hData, vData) {
                             $.ajax({
@@ -350,6 +418,23 @@
                                     'input_json_pk': {{ input_json_pk }}
                                 },
                                 success: function(originData) {
+                                    var optionTag = document.getElementById('dataY');
+                                    var optionInnerHTML = [];
+                                    for (each in originData) {
+                                        optionInnerHTML.push(each);
+                                    }
+
+                                    for (var each in originData) {
+                                            if (each != 'ID' && each != 'IS' && each != 'Concentration' && each != 'Group') {
+                                                var option = document.createElement('option');
+                                                option.setAttribute('value', each);
+                                                option.setAttribute('class', 'options');
+                                                option.innerHTML = each;
+                                                optionTag.appendChild(option);
+
+                                            }
+                                        }
+                                    dataY = $('#dataY').val();
                                     draw_chart(originData, dataX, dataY, hData, vData);
                                     },
                                 error: function() {
