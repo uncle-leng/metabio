@@ -17,6 +17,7 @@
         background: #FFFFFF bottom;}
 
 .right {
+        margin-left: 210px;
         margin-top: 120px;
         box-sizing: border-box;
         float: left;
@@ -32,6 +33,13 @@
         color: #0b2e13;
 
 }
+
+#tools {
+    width: 200px;
+    margin-left: 600px;
+    margin-top: 120px;
+}
+
 [hidden] {
   display: none !important;
 }

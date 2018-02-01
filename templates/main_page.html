@@ -51,7 +51,7 @@
                 </form>
                 {% if show_result %}
                     <input type="button" id="show_result" value="show result" class="btn btn-danger">
-                </form>
+
                 {% endif %}
 
 
@@ -69,9 +69,10 @@
 
                 {% if graph %}
 
+
                     <div class="container">
                         <div class="row">
-                            <div class="col-md-2 offset-6">
+                            <div class="col-md-2">
                                 <select id="dataY" class="custom-select">
                                     <!--<option value="Concentration">Concentration</option>
                                     <option value="IS">IS</option>
@@ -82,47 +83,124 @@
                                 </select>
                             </div>
                         </div>
+
+                        <div class="form-group col-md-2">
+                            <input type="checkbox" class="filled-in" value="" id="None" checked="checked">
+                            <label for="None">None</label>
+                        </div>
+
+                        <div class="form-group col-md-2">
+                            <input type="checkbox" class="filled-in" value="" id="IS_Normalisation">
+                            <label for="IS_Normalisation">IS Normalisation</label>
+                        </div>
+
+                        <div class="form-group col-md-2">
+                            <input type="checkbox" class="filled-in" value="" id="Reagent_Blank_Subtraction">
+                            <label for="Reagent_Blank_Subtraction">Reagent Blank Subtraction</label>
+                        </div>
+
+                        <div class="form-group col-md-2">
+                            <input type="checkbox" class="filled-in" value="" id="Both">
+                            <label for="Both">Both</label>
+                        </div>
+
+                    <div id="chart" style="width: 800px; height: 400px; margin-left: 180px; margin-top: -320px"></div>
                     </div>
 
-
-                    <div id="chart" style="width: 800px; height: 400px; margin-left: auto; margin-right: auto"></div>
                     <script type="text/javascript">
+
                         var myChart = echarts.init(document.getElementById('chart'), '', {devicePixelRatio: 2});
-                        var selected = {}; //selected row
-                        var selectedPoints = {};
-                        var hData = [];
-                        var vData = [];
+                        var selected = {};
+                        var checkboxes = {};
                         var two_dimen_data = [];
                         var option;
-                        var data;
+                        var data; //copied originData
+                        var offset;
                         myChart.on('click', function(para) {
-                            var origin_index = hData[para.dataIndex][0];
-
-                            if (!selected.hasOwnProperty(origin_index)) {
-                                selected[origin_index] = true;
+                            var origin_index = para.dataIndex;
+                            if (!selected.hasOwnProperty(origin_index + ',' + para.seriesName)) {
+                                selected[origin_index + ',' + para.seriesName] = true;
                             }
                             else {
-                                selected[origin_index] = !selected[origin_index];
+                                selected[origin_index + ',' + para.seriesName] = !selected[origin_index + ',' + para.seriesName];
                             }
+                            option = get_option(two_dimen_data, selected, para.seriesName);
+                            myChart.setOption(option);
+                        });
 
-                            if (! selectedPoints.hasOwnProperty(origin_index + ',' + para.seriesName)) {
-                                selectedPoints[origin_index + ',' + para.seriesName] = true;
-                            }
-                            else {
-                                selectedPoints[origin_index + ',' + para.seriesName] = !selectedPoints[origin_index + ',' + para.seriesName];
-                            }
+                        $('#None').on('click', function() {
+                            if ($(this).is(':checked')) {
+                                if ($('#IS_Normalisation').is(':checked')) {
+                                    $('#IS_Normalisation').prop("checked", false);
+                                }
 
-                            var tmp = [];
-                            for (var i = 0; i < hData.length; i++) {
-                                if (!selected.hasOwnProperty(hData[i][0]) || !selected[hData[i][0]]) {
-                                    tmp.push([hData[i][1], vData[i]]);
+                                if ($('#Reagent_Blank_Subtraction').is(':checked')) {
+                                    $('#Reagent_Blank_Subtraction').prop("checked", false);
+                                }
+
+                                if ($('#Both').is(':checked')) {
+                                    $('#Both').prop("checked", false);
                                 }
                             }
-                            two_dimen_data = tmp;
-                            option = get_option(hData, vData, two_dimen_data, selected);
-                            myChart.setOption(option);
+                            checkboxes = update_checkboxes();
+                            var new_data = originData_to_checkboxData(data, checkboxes);
+                            var dataY = $('#dataY').val();
+                            draw_chart(new_data, 'Concentration', dataY);
 
                         });
+
+                        $('#IS_Normalisation').on('click', function() {
+                            if ($(this).is(':checked')) {
+                                $('#None').prop("checked", false);
+
+                                if ($('#Reagent_Blank_Subtraction').is(':checked')) {
+                                    $('#Both').prop("checked", true);
+                                }
+                            }
+                            else {
+                                $('#Both').prop("checked", false);
+                            }
+                            checkboxes = update_checkboxes();
+                            var new_data = originData_to_checkboxData(data, checkboxes);
+                            var dataY = $('#dataY').val();
+                            draw_chart(new_data, 'Concentration', dataY);
+                        });
+
+                        $('#Reagent_Blank_Subtraction').on('click', function() {
+                            if ($(this).is(':checked')) {
+                                $('#None').prop("checked", false);
+
+
+                                if ($('#IS_Normalisation').is(':checked')) {
+                                    $('#Both').prop("checked", true);
+                                }
+                            }
+                            else {
+                                $('#Both').prop("checked", false);
+                            }
+                            checkboxes = update_checkboxes();
+                            var new_data = originData_to_checkboxData(data, checkboxes);
+                            var dataY = $('#dataY').val();
+                            draw_chart(new_data, 'Concentration', dataY);
+
+                        });
+
+                        $('#Both').on('click', function() {
+                            if ($(this).is(':checked')) {
+                                $('#IS_Normalisation').prop("checked", true);
+                                $('#Reagent_Blank_Subtraction').prop("checked", true);
+                            }
+
+                            if (! $(this).is(':checked')) {
+                                $('#IS_Normalisation').prop("checked", false);
+                                $('#Reagent_Blank_Subtraction').prop("checked", false);
+                            }
+                            checkboxes = update_checkboxes();
+                            var new_data = originData_to_checkboxData(data, checkboxes);
+                            var dataY = $('#dataY').val();
+                            draw_chart(new_data, 'Concentration', dataY);
+                        });
+
                         $('#show_result').on('click', function() {
                             console.log(selected);
                             $.ajax({
@@ -133,6 +211,7 @@
                                 dataType: 'json',
                                 data: {'selected': JSON.stringify(selected),
                                         'input_json_pk': {{ input_json_pk }},
+                                        'offset': offset.toString(),
                                         'csrfmiddlewaretoken': '{{ csrf_token }}'},
                                 success: function(result) {
                                     window.sessionStorage.setItem("result_data", JSON.stringify(result));
@@ -145,13 +224,12 @@
                                 error: function() {alert('can not show result!!!')}
                             })
                         });
+
                         $('#dataY').on('change', function() {
-                            hData = [];
-                            vData = [];
                             two_dimen_data = [];
                             var dataX = 'Concentration';
                             var dataY = $('#dataY').val();
-                            draw_chart(data, dataX, dataY, hData, vData);
+                            draw_chart(data, dataX, dataY);
                         });
 
                         $(function () {
@@ -179,7 +257,7 @@
                                     var dataX = 'Concentration';
                                     var dataY = $('#dataY').val();
 
-                                    draw_chart(originData, dataX, dataY, hData, vData);
+                                    draw_chart(originData, dataX, dataY);
                                     },
                                     error: function() {
                                         alert('error!')
@@ -209,7 +287,7 @@
                                         var dataX = 'Concentration';
                                         var dataY = $('#dataY').val();
 
-                                        draw_chart(originData, dataX, dataY, hData, vData);
+                                        draw_chart(originData, dataX, dataY);
                                         },
                                         error: function() {
                                             alert('error!')
@@ -217,6 +295,7 @@
                                         })
                             }
                             });
+
                         function get_length(obj) {
                             var size = 0;
                             for (key in obj) {
@@ -226,72 +305,20 @@
                             }
                             return size;
                         }
-                        function sortXAxis(hData, vData, dataY) {
-                            var tmp = new Array();
-                            for (var i = 0; i < hData.length; i++) {
-                                hData[i] = [i, hData[i], i.toString() + ',' + dataY];
-                                tmp[i] = vData[i];
-                            }
-                            hData.sort(sortArr);
-                            for (var j = 0; j < vData.length; j++) {
-                                vData[j] = tmp[hData[j][0]];
-                            }
-                        }
-                        function sortArr(m, n) {
-                            if (m[1] < n[1]) {
-                                return -1;
-                            }
-                            else if (m[1] > n[1]) {
-                                return 1;
-                            }
-                            else return 0;
-                        }
-                        function filter_selected_data(hData, vData, selected) {
-                            var res = [];
-                            for (var i = 0; i < hData.length; i++) {
-                                //if (selected[hData[i][0]] == true) {
-                                if (selectedPoints[hData[i][2]] == true) {
-                                    res.push('-');
-                                }
-                                else {
-                                    res.push(vData[i]);
-                                }
-                            }
-                            return res;
-                        }
-                        function filter_unselected_data(hData, vData, selected) {
-                            var res = [];
-                            for (var i = 0; i < hData.length; i++) {
-                                //if (selected[hData[i][0]] == true){
-                                if (selectedPoints[hData[i][2]] == true) {
-                                    res.push(vData[i]);
-                                }
-                                else {
-                                    res.push('-');
-                                }
-                            }
-                            return res;
-                        }
-                        function get_clear_hData(hData) {
-                            var res = [];
-                            for (var i = 0; i < hData.length; i++) {
-                                res.push(hData[i][1]);
-                            }
-                            return res;
-                        }
-                        function get_option(hData, vData, two_dimen_data, selected) {
-                            /*
-                            var myRegression = regression.linear(two_dimen_data);
-                            var regression_points = [];
-                            var k = myRegression.equation[0];
-                            var b = myRegression.equation[1];
-                            var clear_hData = get_clear_hData(hData);
-                            for (var i = 0; i < clear_hData.length; i++) {
-                                regression_points.push(k * clear_hData[i] + b);
-                            }
-                            */
 
-                            var myRegression = ecStat.regression('linear', two_dimen_data);
+                        function get_regression_points(two_dimen_data, selected, dataY) {
+                            var res = [];
+                            for (var i = 0; i < two_dimen_data.length; i++) {
+                                if (!selected.hasOwnProperty(i.toString() + ',' + dataY) || !selected[i.toString() + ',' + dataY]) {
+                                    res.push(two_dimen_data[i]);
+                                }
+                            }
+                            return res;
+                        }
+
+                        function get_option(two_dimen_data, selected, dataY) {
+                            var regression_points = get_regression_points(two_dimen_data, selected, dataY);
+                            var myRegression = ecStat.regression('linear', regression_points);
                             myRegression.points.sort(function(a, b) {
                                 return a[0] - b[0];
                             });
@@ -302,47 +329,43 @@
 
                             xAxis: {
                                 name: 'Concentration',
-                                type: 'category',
+                                //type: 'category',
+                                type: 'value',
                                 boundaryGap: false,
-                                data: get_clear_hData(hData),
-                                interval: 10
+                                min: 0,
+                                interval: 5
+                                //data: get_clear_hData(hData)
+
 
                             },
                             yAxis: {
                                 name: $('#dataY').val(),
                                 type: 'value'
                             },
-                            /*
+
                             dataZoom: {
                                 show: true,
                                 realtime: true,
                                 height: 20
                             },
-                            */
+
                             series: [{
                                 name: $('#dataY').val(),
                                 type: 'scatter',
-                                data: [],
+                                //data: [],
+                                data: two_dimen_data,
                                 itemStyle: {
                                     normal: {
-                                        color: '#d94e5d'
-                                    }
-                                }
-
-                            },
-                                {
-                                name: $('#dataY').val(),
-                                type: 'scatter',
-                                data: [],
-                                itemStyle: {
-                                    normal: {
-                                        color: '#eac736'
+                                        //color: '#d94e5d'
+                                        color: function(para) {
+                                            //var para = para;
+                                            if (selected[para.dataIndex + ',' + dataY]) {return '#eac736';}
+                                            else {return '#d94e5d';}
+                                        }
                                     }
                                 }
 
                                 },
-
-
                                {
                                 name: 'line',
                                 type: 'line',
@@ -369,7 +392,9 @@
                                         coord: myRegression.points[myRegression.points.length - 1]
                                     }]
                                 }
+
                             }
+
 
                             ],
                             tooltip: {
@@ -377,86 +402,81 @@
                                 triggerOn: 'mousemove',
                                 //showContent: true,
                                 formatter: function (para) {
-                                    return option.xAxis.name + '  :  ' + para.name + '<br/>'
-                                         + option.yAxis.name + '  :  ' + para.data + '<br/>';
+                                    return option.xAxis.name + '  :  ' + para.data[0] + '<br/>'
+                                         + option.yAxis.name + '  :  ' + para.data[1] + '<br/>';
                                 }
                                 }
                             };
-                            option.series[0].data = filter_selected_data(hData, vData, selected);
-                            option.series[1].data = filter_unselected_data(hData, vData, selected);
                             return option;
                         }
-                        function draw_chart(originData, dataX, dataY, hData, vData) {
+
+                        function draw_chart(originData, dataX, dataY) {
                             myChart.showLoading();
+                            var hData = originData[dataX];
+                            var vData = originData[dataY];
+                            var row_num = 0;
+                            two_dimen_data = [];
                             for (var i = 0; i < get_length(originData[dataX]); i++) {
-                                if (originData['Group'][i] == 'S'){
-                                    hData.push(originData[dataX][i]);
+                                if (originData['Group'][i] == 'S') {
+                                    two_dimen_data.push([hData[i], vData[i]]);
                                 }
                             }
-                            for (var j = 0; j < get_length(originData[dataY]); j++) {
+
+                            for (var j = 0; j < get_length(originData[dataX]); j++) {
+
                                 if (originData['Group'][j] == 'S') {
-                                    vData.push(originData[dataY][j]);
+                                    offset = row_num;
+                                    break;
                                 }
+                                row_num += 1;
                             }
-                            sortXAxis(hData, vData, dataY);
-                            for (var k = 0; k < hData.length; k++) {
-                                if (!selectedPoints.hasOwnProperty(hData[k][2]) || !selectedPoints[hData[k][2]]){
-                                    two_dimen_data.push([hData[k][1], vData[k]]);
-                                }
-                            }
-                            option = get_option(hData, vData, two_dimen_data, selected);
+                            option = get_option(two_dimen_data, selected, dataY);
                             myChart.hideLoading();
                             myChart.setOption(option);
                         }
-                        function show_chart(dataX, dataY, hData, vData) {
-                            $.ajax({
-                                type: 'GET',
-                                async: true,
-                                url: '../show_graph',
-                                dataType: 'json',
-                                data: {
-                                    'input_json_pk': {{ input_json_pk }}
-                                },
-                                success: function(originData) {
-                                    var optionTag = document.getElementById('dataY');
-                                    var optionInnerHTML = [];
-                                    for (each in originData) {
-                                        optionInnerHTML.push(each);
-                                    }
 
-                                    for (var each in originData) {
-                                            if (each != 'ID' && each != 'IS' && each != 'Concentration' && each != 'Group') {
-                                                var option = document.createElement('option');
-                                                option.setAttribute('value', each);
-                                                option.setAttribute('class', 'options');
-                                                option.innerHTML = each;
-                                                optionTag.appendChild(option);
+                        function update_checkboxes() {
+                            var none = $('#None').prop("checked");
+                            var nor = $('#IS_Normalisation').prop("checked");
+                            var rea = $('#Reagent_Blank_Subtraction').prop("checked");
+                            var both = $('#Both').prop("checked");
+                            var checkboxes = {'none': none,
+                                          'nor': nor,
+                                          'rea': rea,
+                                          'both': both};
+                            return checkboxes;
+                        }
 
-                                            }
-                                        }
-                                    dataY = $('#dataY').val();
-                                    draw_chart(originData, dataX, dataY, hData, vData);
-                                    },
-                                error: function() {
-                                    alert('error!')
-                                }
-                            })
+                        function originData_to_is_nor(originData) {
+                            return originData; //need to be changed
                         }
-                        function show_try_chart(dataX, dataY, hData, vData) {
-                            $.ajax({
-                                   type: 'POST',
-                                   async: true,
-                                   url: '../show_try_graph',
-                                   dataType: 'json',
-                                   data: {"try": 'true',
-                                       'csrfmiddlewaretoken': '{{ csrf_token }}'},
-                                   success: function(originData) {
-                                       draw_chart(originData, dataX, dataY, hData, vData);
-                                       $('#download_sample').click();
-                                   },
-                                   error: function() {alert("try error!")}
-                               })
+
+                        function originData_to_rea(originData) {
+                            return originData; // need to be changed
                         }
+
+                        function originData_to_both(originData) {
+                            return originData; // need to be changed
+                        }
+
+                        function originData_to_checkboxData(originData, checkboxes) {
+                            if (checkboxes['none']) {
+                                return originData;
+                            }
+                            else if (checkboxes['both']) {
+                                return originData_to_both(originData);
+                            }
+                            else if (checkboxes['nor']) {
+                                return originData_to_is_nor(originData);
+                            }
+                            else if (checkboxes['rea']) {
+                                return originData_to_rea(originData);
+                            }
+                            else {
+                                return originData;
+                            }
+                        }
+
                     </script>
                 {% endif %}
             </div>

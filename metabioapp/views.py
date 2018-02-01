@@ -127,20 +127,12 @@ def show_graph(request):
 
 
 def show_result(request):
-    def file_iterator(filename, chunk_size=512):
-        with open(filename, 'rb') as f:
-            while True:
-                c = f.read(chunk_size)
-                if c:
-                    yield c
-                else:
-                    break
-
     selected = json.loads(request.POST['selected'])
     input_json_pk = request.POST['input_json_pk']
+    offset = request.POST['offset']
     uploadfile_id = InputJSON.objects.get(pk=int(input_json_pk)).upload_file_id
     uploadfile_path = UploadFile.objects.get(pk=uploadfile_id).upload_file.path
-    filtered_json = generate_filtered_input(uploadfile_path, selected)
+    filtered_json = generate_filtered_input(uploadfile_path, selected, offset)
     generate_filtered_output(filtered_json, './result_csv.csv')
     generate_output('./result_csv.csv', './result_xlsx.xlsx')
     transfer_to_json('./result_xlsx.xlsx', './result_json.json')
