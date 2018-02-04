@@ -45,6 +45,7 @@
     <input type="text" name="download_result" value="download_result"  style="display: none">
     <input type="text" id="selected_input" name="selected" value="download_sample" style="display: none">
     <input type="text" id="json_pk_input" name="input_json_pk" value="download_sample" style="display: none">
+    <input type="text" id="offset_input" name="offset" value="download_sample" style="display: none">
     <input type="submit" value="download result file" class="btn btn-warning">
 </form>
 
@@ -54,6 +55,7 @@
         var result_data = JSON.parse(window.sessionStorage.getItem("result_data"));
         var selected = JSON.parse(window.sessionStorage.getItem("selected"));
         var input_json_pk = JSON.parse(window.sessionStorage.getItem("input_json_pk"));
+        var offset = JSON.parse(window.sessionStorage.getItem('offset'));
         var algorithm = $('#algorithm').val();
         var dataX = 'Concentration';
         var dataY = 'IS';
@@ -61,24 +63,11 @@
 
         $('#selected_input').val(JSON.stringify(selected));
         $('#json_pk_input').val(input_json_pk);
-
+        $('#offset_input').val(offset);
         $('#algorithm').on('change', function() {
             algorithm = $(this).val();
-            //alert(algorithm);
             draw_chart(algorithm, dataX, dataY, result_data);
         });
-        /*
-        $('#dataX').on('change', function() {
-            dataX = $(this).val();
-            draw_chart(algorithm, dataX, dataY, result_data);
-        });
-        $('#dataY').on('change', function() {
-            dataY = $(this).val();
-            draw_chart(algorithm, dataX, dataY, result_data);
-        });
-        */
-
-
     });
 
     function get_length(obj) {
