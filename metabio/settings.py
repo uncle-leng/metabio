@@ -25,7 +25,7 @@ SECRET_KEY = 'rx0-u6pxv2$03f1^15a7qq6%6aw08px8#l-p9tz63$he*+7s2_'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['metabio-dev.ap-southeast-2.elasticbeanstalk.com']
 
 
 # Application definition
