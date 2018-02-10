@@ -4,6 +4,28 @@ import statistics
 import itertools
 import xlsxwriter
 import os
+import traceback
+
+
+def enforce_R(input_path):
+    has_R = False
+    with open(input_path, 'r') as f:
+        reader = csv.reader(f)
+        rows = [row for row in reader]
+        num_metabolo = len(rows[0]) - 4
+        for row in rows:
+            if row[2] == 'R':
+                has_R = True
+        f.close()
+    with open(input_path, 'a') as f:
+        writer = csv.writer(f)
+        if not has_R:
+            row_to_write = ['force_R', '0', 'R', '0']
+            for i in range(num_metabolo):
+                row_to_write.append('0')
+            writer.writerow([])
+            writer.writerow(row_to_write)
+        f.close()
 
 
 def get_groups(filename):
@@ -13,7 +35,9 @@ def get_groups(filename):
         next(reader)
 
         for line in reader:
-            if (line[2] in groups) == False:
+            if len(line) == 0:
+                continue
+            if line[2] not in groups:
                 groups.update({line[2]: 0})
     fp.close()
     return (groups)
@@ -25,6 +49,8 @@ def group_count(filename, groups):
         next(reader)
 
         for line in reader:
+            if len(line) == 0:
+                continue
             for sample in groups:
                 if sample == line[2]:
                     groups[sample] = groups[sample] + 1
@@ -39,13 +65,15 @@ def is_normalise(filename):
         fline = next(reader)
 
         for line in reader:
-            mat.append(line[3:])
+            if len(line) != 0:
+                mat.append(line[3:])
 
     arr = numpy.array(mat)
     intarr = arr.astype(numpy.int)
 
     isnorm = []
-    isnorm = intarr[:, 0] / intarr[:, 0].min()
+    #isnorm = intarr[:, 0] / intarr[:, 0].min()
+    isnorm = intarr[:, 0] / intarr[:, 0].max()
     finalarr = numpy.array(isnorm)
 
     for i in range(1, len(intarr[0])):
@@ -62,8 +90,52 @@ def is_normalise(filename):
         fin_list.append(fline)
         i = 0
         for line in reader:
-            fin_list.append(line[:3] + tr_finalarr_list[i])
-            i = i + 1
+            if len(line) != 0:
+                fin_list.append(line[:3] + tr_finalarr_list[i])
+                i = i + 1
+    fp.close()
+    return (fin_list, tr_finalarr)
+
+
+
+
+def is_normalise_negative(filename):
+    mat = []
+    with open(filename, 'r') as fp:
+        reader = csv.reader(fp)
+        fline = next(reader)
+
+        for line in reader:
+            if len(line) != 0:
+                mat.append(line[3:])
+
+    arr = numpy.array(mat)
+    intarr = arr.astype(numpy.int)
+
+    isnorm = []
+    MIN = intarr[:, 0]
+    #isnorm = intarr[:, 0] / intarr[:, 0].min()
+    isnorm = intarr[:, 0] / intarr[:, 0].max()
+
+    finalarr = numpy.array(isnorm)
+
+    for i in range(1, len(intarr[0])):
+        val = intarr[:, i]
+        finalarr = numpy.vstack((finalarr, val))
+    tr_finalarr = finalarr.transpose()
+    tr_finalarr_list = tr_finalarr.tolist()
+    fp.close()
+
+    with open(filename, 'r') as fp:
+        reader = csv.reader(fp)
+        fline = next(reader)
+        fin_list = []
+        fin_list.append(fline)
+        i = 0
+        for line in reader:
+            if len(line) != 0:
+                fin_list.append(line[:3] + tr_finalarr_list[i])
+                i = i + 1
     fp.close()
     return (fin_list, tr_finalarr)
 
@@ -137,6 +209,8 @@ def stats(metlist, groups, workbook, text):
                     li.append(metlist[i][j])
             try:
                 #                op_text = "CV of" + metlist[0][j] + ": " + str(statistics.stdev(li)/statistics.mean(li)*100)
+                if len(li) == 1:
+                    li.append(0.0)
                 worksheet.write(out_count, 0, metlist[0][j])
                 worksheet.write(out_count, 1, statistics.stdev(li) / statistics.mean(li) * 100)
                 # print("CV of", metlist[0][j], ": ", statistics.stdev(li)/statistics.mean(li)*100)
@@ -263,13 +337,17 @@ def write_data(workbook, reader, text):
         y = 0
 
 
-def generate_output(input_path, output_path):
+def generate_output(input_path, output_path, is_nor):
     try:
         workbook = xlsxwriter.Workbook(output_path)
+        enforce_R(input_path)
         write_rawdata(workbook, input_path)
         groups = get_groups(input_path)
         groups = group_count(input_path, groups)
-        isnorm = is_normalise(input_path)
+        if is_nor:
+            isnorm = is_normalise(input_path)
+        else:
+            isnorm = is_normalise_negative(input_path)
         write_data(workbook, isnorm[0], "IS Normalised Data")
         stats(isnorm[0], groups, workbook, "CVs after Internal Standard Normalisation")
         reg_sub_li = subtract_reg(isnorm[0])
@@ -281,6 +359,7 @@ def generate_output(input_path, output_path):
         stats(fin_conc_val, groups, workbook, "CVs of Concentrations after Internal standard Normalisation and Reagent Blank Subtraction")
         workbook.close()
     except Exception as e:
+        traceback.print_exc()
         print(e)
         if os.path.isfile(input_path):
             os.remove(input_path)

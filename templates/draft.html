@@ -1,72 +1,124 @@
- /*
-    function draw_chart(algorithm, dataX, dataY) {
+ <!-- upload button -->
+                <div class="form-group">
+                    <!--<span class="h3">upload file</span>-->
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <p>
+                        <label for="id_upload_form"></label>
+                        <input type="file" name="upload_form" required id="id_upload_form" />
+                        </p>
+                        <input type="submit" class="btn btn-success pull-right" value="upload">
 
-        $.ajax({
-            type: 'GET',
-            async: true,
-            url: '../draw_graph',
-            dataType: 'json',
-            data: {
-                'json_pk': {{ json_pk }}
-            },
-            success: function (originData) {
+                    </form>
+                    {% if typeError %}
+                            <p> invalid file !</p>
+                    {% endif %}
 
-                var hData = [];
-                var vData = [];
-                var workbook;
+                </div>
 
-                if (algorithm == 'IS Normalisation') {
-                    workbook = originData[1];
-                }
-                else if (algorithm == 'IS + Reagent Blank Subtraction') {
-                    workbook = originData[3];
-                }
-                else if (algorithm == 'IS + Reagent Blank Subtraction + Concentration') {
-                    workbook = originData[5];
-                }
-                console.log(get_length(workbook[dataX]));
-                for (var i = 0; i < get_length(workbook[dataX]); i++) {
-                    hData.push(workbook[dataX][i]);
-                    //console.log(hData);
-                }
-                for (var j = 0; j < get_length(workbook[dataY]); j++) {
-                    vData.push(workbook[dataY][j]);
-                    //console.log(vData);
-                }
+                <!-- download sample button -->
+                <form name="download_sample" method="post">
+                    {% csrf_token %}
+                    <input type="text" value="download_sample" name="download_sample" style="display: none">
+                    <input type="submit" id="download_sample" value="download sample file" class="btn btn-warning">
+                </form>
+                {% if show_result %}
+                    <input type="button" id="show_result" value="show result" class="btn btn-danger">
+                {% endif %}
 
-                sortXAxis(hData, vData);
 
-                var option = {
-                    title: {
-                        text: ''
-                    },
 
-                    xAxis: {
-                        type: 'category',
-                        boundaryGap: false,
-                        data: hData
-                    },
-                    yAxis: {
-                        type: 'value'
-                    },
-                    series: [{
-                        name: 'Concentration',
-                        type: 'scatter',
-                        data: vData
-                    }],
-                    tooltip: {
-                        trigger: 'item',
-                        triggerOn: 'mousemove',
-                        showContent: true
-                    }
-                };
 
-                myChart.setOption(option);
 
-            },
-            error: function() {
-            alert('error occurs!');
-            }
-        });
-    }
-    */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                {% if not graph %}
+                    <h1 class="introduction_text">Introduction</h1>
+                    <h2 class="introduction_text">lorem epsum</h2>
+                     <form name="try" method="post">
+                    {% csrf_token %}
+                    <input type="text" value="try" name="try" style="display: none">
+                    <input type="submit" value="try it out !" class="btn btn-warning">
+                     </form>
+                {% endif %}
+
+                {% if graph %}
+
+
+                    <div class="container">
+
+                        <div class="row" class="col-md-10">
+                            <div id="chart"></div>
+                            <div class="col-md-2">
+                                <select id="dataY" class="custom-select">
+                                    <!--<option value="Concentration">Concentration</option>
+                                    <option value="IS">IS</option>
+                                    <option value="Acetate">Acetate</option>
+                                    <option value="Propionate">Propionate</option>
+                                    <option value="Isobutyrate">Isobutyrate</option>
+                                    <option value="Butyrate">Bytyrate</option>-->
+                                </select>
+                                <div class="form-group col-md-2">
+                                    <input type="checkbox" class="filled-in" value="" id="None" checked="checked">
+                                    <label class="checkbox_word" for="None">None</label>
+                                </div>
+
+                                <div class="form-group col-md-2">
+                                    <input type="checkbox" class="filled-in" value="" id="IS_Normalisation">
+                                    <label class="checkbox_word" for="IS_Normalisation">IS Nor</label>
+                                </div>
+
+                                <div class="form-group col-md-2">
+                                    <input type="checkbox" class="filled-in" value="" id="Reagent_Blank_Subtraction">
+                                    <label class="checkbox_word" for="Reagent_Blank_Subtraction">RBS</label>
+                                </div>
+
+                                <div class="form-group col-md-2">
+                                    <input type="checkbox" class="filled-in" value="" id="Both">
+                                    <label class="checkbox_word" for="Both">Both</label>
+                                </div>
+                            </div>
+
+                        </div>
+
+
+                        <div class="row col-md-12">
+                            <table id="table" class="display" cellspacing="0">
+                                <thead>
+                                    <tr>
+                                        <th>Metabolomic</th>
+                                        <th>R^2</th>
+                                        <th>R^2 after IS</th>
+                                        <th>R^2 after Reagent Blank Subtraction</th>
+                                        <th>R^2 after Both</th>
+                                    </tr>
+                                </thead>
+
+                                <tbody id="R2data">
+
+                                </tbody>
+
+
+                            </table>
+                        </div>

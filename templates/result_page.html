@@ -6,14 +6,16 @@
     <link rel="stylesheet" href="{% static 'css/bootstrap.min.css'%} ">
     <link rel="stylesheet" href="{% static 'css/bootstrap-grid.min.css' %}">
     <link rel="stylesheet" href="{% static 'css/main_page.css' %}">
+    <link rel="stylesheet" href="//cdn.datatables.net/1.10.16/css/jquery.dataTables.min.css">
     <meta charset="UTF-8">
     <script type="text/javascript" src="../static/js/echarts.js"></script>
     <script type="text/javascript" src="../static/js/jquery-3.2.1.js"></script>
+    <script type="text/javascript" src="https://cdn.datatables.net/1.10.16/js/jquery.dataTables.min.js"></script>
     <title>Result</title>
 </head>
 <body>
 <select id="algorithm">
-    <!--<option value="IS Normalisation" selected="selected">IS Normalisation</option>-->
+    <option value="IS Normalisation" selected="selected">IS Normalisation</option>
     <option value="IS + Reagent Blank Subtraction">IS + Reagent Blank Subtraction</option>
     <option value="IS + Reagent Blank Subtraction + Concentration">IS + Reagent Blank Subtraction + Concentration</option>
 </select>
@@ -39,34 +41,39 @@
 </select>
 -->
 
-<div id="chart" style="width: 800px; height: 400px; margin-left: auto; margin-right: auto"></div>
+<table id="table" class="display" width="100%"></table>
 <form name="download_result" method="post" action="../download/">
     {% csrf_token %}
     <input type="text" name="download_result" value="download_result"  style="display: none">
     <input type="text" id="selected_input" name="selected" value="download_sample" style="display: none">
     <input type="text" id="json_pk_input" name="input_json_pk" value="download_sample" style="display: none">
     <input type="text" id="offset_input" name="offset" value="download_sample" style="display: none">
+    <input type="text" id="is_nor" name="is_nor" value="is_nor" style="display: none">
     <input type="submit" value="download result file" class="btn btn-warning">
 </form>
 
 <script type="text/javascript">
-    var myChart = echarts.init(document.getElementById('chart'));
     $(function() {
         var result_data = JSON.parse(window.sessionStorage.getItem("result_data"));
         var selected = JSON.parse(window.sessionStorage.getItem("selected"));
         var input_json_pk = JSON.parse(window.sessionStorage.getItem("input_json_pk"));
         var offset = JSON.parse(window.sessionStorage.getItem('offset'));
         var algorithm = $('#algorithm').val();
+        var is_nor = JSON.parse(window.sessionStorage.getItem('is_nor'));
         var dataX = 'Concentration';
         var dataY = 'IS';
-        draw_chart(algorithm, dataX, dataY, result_data);
+
+        //draw_chart(algorithm, dataX, dataY, result_data);
+        draw_table(algorithm, result_data);
 
         $('#selected_input').val(JSON.stringify(selected));
         $('#json_pk_input').val(input_json_pk);
         $('#offset_input').val(offset);
+        $('#is_nor').val(is_nor);
         $('#algorithm').on('change', function() {
             algorithm = $(this).val();
-            draw_chart(algorithm, dataX, dataY, result_data);
+            $('#table').DataTable().destroy();
+            draw_table(algorithm, result_data);
         });
     });
 
@@ -80,82 +87,50 @@
         return size;
     }
 
-    function sortXAxis(dataX, dataY) {
-        var tmp = new Array();
-        for (var i = 0; i < dataX.length; i++) {
-            tmp[dataX[i]] = dataY[i];
+
+    function draw_table(algorithm, originData) {
+        var table_data;
+        if (algorithm == 'IS Normalisation') {
+            table_data = originData[1];
         }
-        dataX.sort();
-        for (var j = 0; j < dataY.length; j++) {
-            dataY[j] = tmp[dataX[j]];
+        if (algorithm == 'IS + Reagent Blank Subtraction') {
+            table_data = originData[3];
         }
+        if (algorithm == 'IS + Reagent Blank Subtraction + Concentration') {
+            table_data = originData[5];
+        }
+        var table_data_array = json_data_to_array(table_data);
+        var heads = table_data['heads'];
+        var columns = [];
+        for (var i = 0; i < heads.length; i++) {
+            columns.push({title: heads[i]});
+        }
+
+        table = $('#table').DataTable({
+            data: table_data_array,
+            columns: columns,
+            destroy: true,
+            "ordering": false
+        });
+
     }
 
-    function draw_chart(algorithm, dataX, dataY, originData) {
-        var hData = [];
-                var vData = [];
-                var workbook;
-                /*
-                if (algorithm == 'IS Normalisation') {
-                    workbook = originData[1];
+    function json_data_to_array(table_data) {
+        var res = [];
+        for (var i = 0; i < table_data['ID'].length; i++) {
+            var tmp = [];
+            for (var each in table_data) {
+                if (each != 'heads') {
+                    tmp.push(table_data[each][i]);
                 }
-                */
-                if (algorithm == 'IS + Reagent Blank Subtraction') {
-                    workbook = originData[3];
-                }
-                else if (algorithm == 'IS + Reagent Blank Subtraction + Concentration') {
-                    workbook = originData[5];
-                }
-                //console.log(get_length(workbook[dataX]));
-                for (var i = 0; i < get_length(workbook[dataX]); i++) {
-                    if (workbook['Group'][i] == 'S') {
-                        hData.push(workbook[dataX][i]);
-                    }
-                    //console.log(hData);
-                }
-                for (var j = 0; j < get_length(workbook[dataY]); j++) {
-                    if (workbook['Group'][j] == 'S') {
-                        vData.push(workbook[dataY][j]);
-                    }
-                    //console.log(vData);
-                }
-
-                sortXAxis(hData, vData);
-
-                var option = {
-                    title: {
-                        text: ''
-                    },
-
-                    xAxis: {
-                        name: 'Concentration',
-                        type: 'category',
-                        boundaryGap: false,
-                        data: hData
-                    },
-                    yAxis: {
-                        name: 'IS',
-                        type: 'value'
-                    },
-                    series: [{
-                        name: 'Concentration',
-                        type: 'scatter',
-                        data: vData
-                    }],
-                    tooltip: {
-                        trigger: 'item',
-                        triggerOn: 'mousemove',
-                        //showContent: true,
-                        formatter: function (para) {
-                            return option.xAxis.name + '  :  ' + para.name + '<br/>'
-                                 + option.yAxis.name + '  :  ' + para.data + '<br/>';
-                        }
-                        }
-                };
-
-                myChart.setOption(option);
-
+            }
+            res.push(tmp);
+        }
+        return res;
     }
+
+
+
 
                     </script>
 </body>

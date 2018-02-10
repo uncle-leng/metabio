@@ -13,12 +13,12 @@
         margin-left:0;
         position: absolute;
         box-sizing: border-box;
-        width: 200px;
+        width: 100px;
         height: 100%;
         background: #FFFFFF bottom;}
 
 .right {
-        margin-left: 200px;
+        margin-left: 100px;
         margin-top: 100px;
         margin-bottom: 100px;
         padding-left: 20px;
@@ -28,7 +28,7 @@
         overflow-y: hidden;
         overflow-x: hidden;
         color: #0056b3;
-        min-width: 100%;
+        min-width: 90%;
         min-height: 500px;}
 .introduction_text {
         text-align: center;
@@ -36,7 +36,7 @@
 
 }
 #chart {
-    min-width: 800px;
+    min-width: 600px;
     min-height: 400px;
 }
 

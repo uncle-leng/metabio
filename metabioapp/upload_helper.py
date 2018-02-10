@@ -22,7 +22,7 @@ def is_number(s):
 def valid_file(file_path):
     try:
         num_S = 0
-        num_R = 0
+        #num_R = 0
         all_data = pd.read_csv(file_path, header=None).as_matrix()
         head = all_data[0]
         if head[0].strip() != 'ID' or head[1].strip() != 'Concentration' or head[2].strip() != 'Group' or head[3].strip() != 'IS':
@@ -35,9 +35,10 @@ def valid_file(file_path):
                     return False
             if all_data[i][2] == 'S':
                 num_S += 1
-            if all_data[i][2] == 'R':
-                num_R += 1
-        if num_S != 0 and num_R != 0:
+            #if all_data[i][2] == 'R':
+                #num_R += 1
+        #if num_S != 0 and num_R != 0:
+        if num_S != 0:
             return True
         else:
             return False
@@ -59,9 +60,12 @@ def transfer_to_json(input_path, output_path):
         cur_sheet = book.sheet_by_index(i)
         cur_col_num = cur_sheet.ncols
         sheet_data = {}
+        heads = []
         for j in range(cur_col_num):
             head = cur_sheet.col_values(j)[1].strip()
+            heads.append(head)
             sheet_data[head] = cur_sheet.col_values(j)[2:]
+        sheet_data['heads'] = heads
         result[str(i)] = sheet_data
 
     with open(output_path, 'w') as f:
