@@ -1,25 +1,32 @@
 #main_page_nav {
-    height : 100px
+    height : 100px;
+
 }
+
+h1 {font-size:250%;}
+h2 {font-size:200%;}
+p {font-size:100%}
 
 #sidebar {
         min-width: 250px;
         max-width: 250px;
-        height: 100vh;}
+        height: 100vh;
+        background: transparent;
+        }
 .left {
 
-        margin-top: 100px;
+        margin-top: 120px;
         margin-bottom: 100px;
         margin-left:0;
         position: absolute;
         box-sizing: border-box;
         width: 100px;
         height: 100%;
-        background: #FFFFFF bottom;}
+        background: transparent bottom;}
 
 .right {
         margin-left: 100px;
-        margin-top: 100px;
+        margin-top: 120px;
         margin-bottom: 100px;
         padding-left: 20px;
         box-sizing: border-box;
@@ -36,7 +43,7 @@
 
 }
 #chart {
-    min-width: 600px;
+    min-width: 700px;
     min-height: 400px;
 }
 

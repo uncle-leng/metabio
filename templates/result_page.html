@@ -5,43 +5,29 @@
 <head>
     <link rel="stylesheet" href="{% static 'css/bootstrap.min.css'%} ">
     <link rel="stylesheet" href="{% static 'css/bootstrap-grid.min.css' %}">
-    <link rel="stylesheet" href="{% static 'css/main_page.css' %}">
     <link rel="stylesheet" href="//cdn.datatables.net/1.10.16/css/jquery.dataTables.min.css">
+    <link rel="stylesheet" href="{% static 'css/result_page.css' %}">
+    <!--<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.2.13/semantic.min.css">-->
+    <!--<link rel="stylesheet" href="https://cdn.datatables.net/1.10.16/css/dataTables.semanticui.min.css">-->
     <meta charset="UTF-8">
     <script type="text/javascript" src="../static/js/echarts.js"></script>
     <script type="text/javascript" src="../static/js/jquery-3.2.1.js"></script>
     <script type="text/javascript" src="https://cdn.datatables.net/1.10.16/js/jquery.dataTables.min.js"></script>
+    <!--<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.2.13/semantic.min.js"></script>-->
+    <!--<script type="text/javascript" src="https://cdn.datatables.net/1.10.16/js/dataTables.semanticui.min.js"></script>-->
+
+
     <title>Result</title>
 </head>
 <body>
-<select id="algorithm">
+<select id="algorithm" class="custom-select">
     <option value="IS Normalisation" selected="selected">IS Normalisation</option>
     <option value="IS + Reagent Blank Subtraction">IS + Reagent Blank Subtraction</option>
     <option value="IS + Reagent Blank Subtraction + Concentration">IS + Reagent Blank Subtraction + Concentration</option>
 </select>
 
-<!--
-<select id="dataX">
-    <option value="IS">IS</option>
-    <option value="Concentration">Concentration</option>
-    <option value="Acetate">Acetate</option>
-    <option value="Propionate">Propionate</option>
-    <option value="Isobutyrate">Isobutyrate</option>
-    <option value="Butyrate">Bytyrate</option>
 
-</select>
-<select id="dataY">
-    <option value="Concentration">Concentration</option>
-    <option value="IS">IS</option>
-    <option value="Acetate">Acetate</option>
-    <option value="Propionate">Propionate</option>
-    <option value="Isobutyrate">Isobutyrate</option>
-    <option value="Butyrate">Bytyrate</option>
-
-</select>
--->
-
-<table id="table" class="display" width="100%"></table>
+<table id="table" class="cell-border" width="100%"></table>
 <form name="download_result" method="post" action="../download/">
     {% csrf_token %}
     <input type="text" name="download_result" value="download_result"  style="display: none">
@@ -49,7 +35,7 @@
     <input type="text" id="json_pk_input" name="input_json_pk" value="download_sample" style="display: none">
     <input type="text" id="offset_input" name="offset" value="download_sample" style="display: none">
     <input type="text" id="is_nor" name="is_nor" value="is_nor" style="display: none">
-    <input type="submit" value="download result file" class="btn btn-warning">
+    <input type="submit" value="download result file" class="btn btn-outline-danger">
 </form>
 
 <script type="text/javascript">
@@ -60,19 +46,18 @@
         var offset = JSON.parse(window.sessionStorage.getItem('offset'));
         var algorithm = $('#algorithm').val();
         var is_nor = JSON.parse(window.sessionStorage.getItem('is_nor'));
-        var dataX = 'Concentration';
-        var dataY = 'IS';
-
-        //draw_chart(algorithm, dataX, dataY, result_data);
         draw_table(algorithm, result_data);
 
         $('#selected_input').val(JSON.stringify(selected));
         $('#json_pk_input').val(input_json_pk);
         $('#offset_input').val(offset);
         $('#is_nor').val(is_nor);
+
+
         $('#algorithm').on('change', function() {
             algorithm = $(this).val();
             $('#table').DataTable().destroy();
+            //$('#table').DataTable().clear();
             draw_table(algorithm, result_data);
         });
     });
@@ -106,11 +91,13 @@
             columns.push({title: heads[i]});
         }
 
-        table = $('#table').DataTable({
+        $('#table').DataTable({
             data: table_data_array,
             columns: columns,
             destroy: true,
-            "ordering": false
+            ordering: false,
+            searching: false,
+            paging: false,
         });
 
     }
@@ -132,6 +119,6 @@
 
 
 
-                    </script>
+</script>
 </body>
 </html>

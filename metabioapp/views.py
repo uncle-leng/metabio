@@ -123,7 +123,8 @@ def upload(request):
                                                       'upload': False,
                                                       'visualization': True,
                                                       'typeError': False,
-                                                      'input_json_pk': input_json_pk})
+                                                      'input_json_pk': input_json_pk,
+                                                      'try': True})
         if 'upload_your_own_file' in request.POST:
             return render(request, 'main_page.html', {'home': False,
                                                       'upload': True,
@@ -191,7 +192,8 @@ def upload(request):
                                                       'input_json_pk': input_json_pk,
                                                       'home': False,
                                                       'upload': False,
-                                                      'visualization': True})
+                                                      'visualization': True,
+                                                      'try': False})
         else:
             return render(request, 'main_page.html', {'form': form,
                                                       'typeError': True,
