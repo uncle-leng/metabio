@@ -6,6 +6,7 @@
     <link rel="stylesheet" href="{% static 'css/bootstrap-grid.min.css' %}">
     <link rel="stylesheet" href="{% static 'css/main_page.css' %}">
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link href="https://fonts.googleapis.com/css?family=PT+Serif" rel="stylesheet">
     <!--
     <link rel="stylesheet" href="{% static 'css/datatables.min.css' %}">
     -->
@@ -31,7 +32,7 @@
 
     <title>Metabolomics Tool</title>
 </head>
-<body>
+<body style="font-family: 'PT Serif', serif">
 
 
     <nav class="navbar fixed-top navbar-expand-lg navbar-light bg-trans navbar-static-top" id="main_page_nav">
@@ -349,20 +350,18 @@
 
                             function get_option(two_dimen_data, selected, dataY) {
                                 var regression_points = get_regression_points(two_dimen_data, selected, dataY);
-
                                 var myRegression = ecStat.regression('linear', regression_points);
                                 myRegression.points.sort(function(a, b) {
                                     return a[0] - b[0];
                                 });
-
                                 var myRegression_with_R2 = regression.linear(get_regression_points(two_dimen_data, selected, dataY));
                                 var option = {
-                                    backgroundColor: '#fff',
+                                    //backgroundColor: '#fff',
+                                    backgroundColor: 'rgba(255,255,255,0.8)',
                                     title: {
                                         text: 'R2: ' + myRegression_with_R2.r2.toString(),
                                         left: 'right'
                                     },
-
                                     xAxis: {
                                         name: 'Concentration',
                                         //type: 'category',
