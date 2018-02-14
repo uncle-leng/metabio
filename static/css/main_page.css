@@ -9,7 +9,10 @@ h1 {font-size:250%;}
 h2 {font-size:200%;}
 p {font-size:100%;}
 
+.selected {
+    background-color: #5cbdaa !important;
 
+}
 
 
 #sidebar {

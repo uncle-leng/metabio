@@ -105,7 +105,7 @@
                          <form name="try" method="post">
                             {% csrf_token %}
                             <input type="text" value="try" name="try" style="display: none">
-                            <input type="submit" value="try" class="btn btn-outline-warning">
+                            <input type="submit" value="try" class="btn btn-outline-danger">
                          </form>
 
                         <h1 class="introduction_text"><br /> OR <br /></h1>
@@ -126,19 +126,22 @@
                                         <p class="col-md-4 offset-4">
                                             <label for="id_upload_form" class="custom-file-label">
                                                 <input type="file" name="upload_form" class="custom-file-input" required id="id_upload_form" onchange="$(this).next().after().text($(this).val().split('\\').slice(-1)[0])"/>
-                                                <span class="custom-file-control"></span>
+                                                {% if typeError %}
+                                                    <span class="custom-file-control" style="border: 1px solid red;"></span>
+                                                {% else %}
+                                                    <span class="custom-file-control"></span>
+                                                {% endif %}
                                             </label>
-                                            {% if typeError %}
-                                                <div class="invalid-feedback">Example invalid custom file feedback</div>
-                                            {% endif %}
                                         </p>
-                                        <input type="submit" class="btn btn-outline-success pull-right col-md-1" value="upload">
+
                                     </div>
+                                    {% if typeError %}
+                                        <p style="color: red; margin-top: 0; font-size: .875rem;"> invalid file !</p>
+                                    {% endif %}
+                                    <input type="submit" class="btn btn-outline-success" value="upload">
                                 </div>
                             </form>
-                            {% if typeError %}
-                                <p> invalid file !</p>
-                            {% endif %}
+
                          </div>
                     {% endif %}
 
@@ -364,18 +367,31 @@
                                     },
                                     xAxis: {
                                         name: 'Concentration',
-                                        //type: 'category',
+                                        //splitLine: false,
                                         type: 'value',
                                         boundaryGap: false,
                                         min: 0,
                                         interval: 5
                                         //data: get_clear_hData(hData)
 
+                                        //axisLabel: {
+                                            //interval: 0,
+                                            //rotate: -30
+                                        //}
+
 
                                     },
                                     yAxis: {
                                         name: get_selected_metabolo(),
-                                        type: 'value'
+                                        type: 'value',
+                                        //splitLine: false
+                                    },
+
+                                    grid: {
+                                        left: '0%',
+                                        right: '15%',
+                                        containLabel: true
+
                                     },
 
                                     dataZoom: {
@@ -569,6 +585,7 @@
                                         all_metabolo.push(each);
                                         $('#metabolo').append("<tr id=" + each + "></tr>");
                                         var eachid = '#' + each;
+                                        $(eachid).attr("style", "background-color: rgba(255,255,255,0.8)");
                                         $(eachid).append("<td>" + each + "</td>");
                                         //$(eachid).append("<td>" + calculate_R2(originData, 'Concentration', each, selected) + "</td>");
                                         //$(eachid).append("<td>" + calculate_R2(data_after_IS, 'Concentration', each, selected) + "</td>");
