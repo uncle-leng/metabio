@@ -29,6 +29,7 @@
     <script type="text/javascript" src="../static/js/datatables.js"></script>
     -->
     <script type="text/javascript" src="https://cdn.datatables.net/1.10.16/js/jquery.dataTables.min.js"></script>
+    <script type="text/javascript" src="../static/js/bootstrap.min.js"></script>
 
     <title>Metabolomics Tool</title>
 </head>
@@ -40,11 +41,36 @@
 
         <a class="navbar-brand" href="#">Web based concentration calculation tool</a>
 
+         {% if home %}
+                        <nav class="navbar">
+                            <a class="nav-link active" href="">Home</a>
+                            <a class="nav-link disabled" href="#">Upload</a>
+                            <a class="nav-link disabled" href="#">Visualization</a>
+                        </nav>
+                    {% endif %}
+
+                    {% if upload %}
+                        <nav class="navbar">
+                            <a class="nav-link disabled" href="">Home</a>
+                            <a class="nav-link active" href="#">Upload</a>
+                            <a class="nav-link disabled" href="#">Visualization</a>
+                        </nav>
+                    {% endif %}
+
+                    {% if visualization %}
+                        <nav class="navbar">
+                            <a class="nav-link disabled" href="">Home</a>
+                            <a class="nav-link disabled" href="#">Upload</a>
+                            <a class="nav-link active" href="#">Visualization</a>
+                        </nav>
+                    {% endif %}
+
     </nav>
 
     <div id="particles">
         <div class="intro container-fluid">
             <div class="row-fluid">
+            <!--
                 <div class="left">
 
                     {% if home %}
@@ -72,6 +98,7 @@
                     {% endif %}
 
                 </div>
+            -->
 
 
                 <div class="right" style="color: #1b1e21">
@@ -79,7 +106,6 @@
                     {% if home %}
                         <h1 class="introduction_text">Introduction</h1>
                         <h2 class="introduction_text">lorem epsum</h2>
-
                         <div class="container">
                             <div class="row">
                                 <form class="col-md-4 offset-2" name="download_sample" method="post">
@@ -149,11 +175,11 @@
                     {% if visualization %}
                         <div class="container">
 
-                            <div class="row" class="col-md-10">
+                            <div class="row" class="col-md-12">
 
                                 <div class="col-md-2">
 
-                                    <div class="row col-md-1">
+                                    <div class="row col-md-2">
                                         <table id="dataY" class="row-border" cellspacing="0">
                                             <thead>
                                                 <tr>
@@ -165,37 +191,47 @@
 
                                             </tbody>
                                         </table>
+                                        <input type="button" id="show_result" value="show result" class="btn btn-outline-danger">
                                     </div>
+                                </div>
+                                <div id="chart" class="col-md-8"></div>
+                                <div id="control_panel" class="col-md-2">
+
+                                        <div class="form-group">
+                                            <input type="checkbox" class="filled-in" value="" id="IS_Normalisation">
+                                            <label class="checkbox_word" for="IS_Normalisation">IS Nor</label>
+                                        </div>
+
+                                        <div class="form-group">
+                                            <input type="checkbox" class="filled-in" value="" id="Reagent_Blank_Subtraction">
+                                            <label class="checkbox_word" for="Reagent_Blank_Subtraction">RBS</label>
+                                        </div>
+
+                                        <div class="input-group mb-3">
+                                            <select id="regression_method" class="custom-select">
+                                              <option selected value="linear">linear</option>
+                                              <option value="quadratic">quadratic</option>
+                                            </select>
+
+
+                                            <select id="regression_origin" class="custom-select">
+                                                <option selected value="default">default</option>
+                                                <option value="forced">forced</option>
+                                            </select>
+                                        </div>
 
 
                                 </div>
-                                <div id="chart" class="col-md-6"></div>
-                                <div class="col-md-2">
-
-                                    <div class="form-group">
-                                        <input type="checkbox" class="filled-in" value="" id="IS_Normalisation">
-                                        <label class="checkbox_word" for="IS_Normalisation">IS Nor</label>
-                                    </div>
-
-                                    <div class="form-group">
-                                        <input type="checkbox" class="filled-in" value="" id="Reagent_Blank_Subtraction">
-                                        <label class="checkbox_word" for="Reagent_Blank_Subtraction">RBS</label>
-                                    </div>
-
-
-                                    <select id="regression_method" class="custom-select">
-                                      <option selected value="linear">linear</option>
-                                      <option value="exponential">exponential</option>
-                                      <option value="logarithmic">logarithmic</option>
-                                      <option value="polynomial">polynomial</option>
-                                    </select>
-                                </div>
-
-
 
                             </div>
-                            <input type="button" id="show_result" value="show result" class="btn btn-outline-danger">
+
+                            <div class="row" class="col-md-12">
+                                <table id="main_table" class="row-border" width="100%"></table>
+
+                            </div>
+
                         </div>
+
                     {% endif %}
 
 
@@ -220,9 +256,29 @@
                                 }
                                 option = get_option(two_dimen_data, selected, get_selected_metabolo());
                                 myChart.setOption(option);
+
+                                var nor = $('#IS_Normalisation').prop("checked");
+                                $.ajax({
+                                    type: 'POST',
+                                    async: true,
+                                    traditional: true,
+                                    url: '../show_result/',
+                                    dataType: 'json',
+                                    data: {'selected': JSON.stringify(selected),
+                                            'input_json_pk': {{ input_json_pk }},
+                                            'offset': offset.toString(),
+                                            'is_nor': nor.toString(),
+                                            'csrfmiddlewaretoken': '{{ csrf_token }}'},
+                                    success: function(result) {
+                                        fill_main_table(result);
+                                        $('#table').DataTable().destroy();
+                                    },
+                                    error: function() {alert('can not show result!!!')}
+                                })
+
+
+
                             });
-
-
 
                             $('#IS_Normalisation').on('click', function() {
 
@@ -271,8 +327,37 @@
                                 $(this).addClass('selected');
                                 var dataY = get_selected_metabolo();
                                 draw_chart(data, dataX, dataY);
+
+                                var nor = $('#IS_Normalisation').prop("checked");
+                                $.ajax({
+                                    type: 'POST',
+                                    async: true,
+                                    traditional: true,
+                                    url: '../show_result/',
+                                    dataType: 'json',
+                                    data: {'selected': JSON.stringify(selected),
+                                            'input_json_pk': {{ input_json_pk }},
+                                            'offset': offset.toString(),
+                                            'is_nor': nor.toString(),
+                                            'csrfmiddlewaretoken': '{{ csrf_token }}'},
+                                    success: function(result) {
+                                        $('#table').DataTable().destroy();
+                                        fill_main_table(result);
+                                    },
+                                    error: function() {alert('can not show result!!!')}
+                                })
+
                             });
 
+                            $('#regression_method').on('change', function() {
+                               option = get_option(two_dimen_data, selected, get_selected_metabolo());
+                               myChart.setOption(option);
+                            });
+
+                            $('#regression_origin').on('change', function() {
+                                option = get_option(two_dimen_data, selected, get_selected_metabolo());
+                                myChart.setOption(option);
+                            });
                             $(function () {
                                 if ('{{ try }}' == 'False'){
                                     $.ajax({
@@ -353,42 +438,51 @@
 
                             function get_option(two_dimen_data, selected, dataY) {
                                 var regression_points = get_regression_points(two_dimen_data, selected, dataY);
-                                var myRegression = ecStat.regression('linear', regression_points);
-                                myRegression.points.sort(function(a, b) {
-                                    return a[0] - b[0];
-                                });
-                                var myRegression_with_R2 = regression.linear(get_regression_points(two_dimen_data, selected, dataY));
+                                var myRegression;
+                                var myRegression_with_R2;
+                                if ($('#regression_method').val() == 'linear') {
+                                    myRegression = ecStat.regression('linear', regression_points);
+                                    myRegression.points.sort(function (a, b) {
+                                        return a[0] - b[0];
+                                    });
+                                    myRegression_with_R2 = regression.linear(get_regression_points(two_dimen_data, selected, dataY));
+                                }
+                                if ($('#regression_method').val() == 'quadratic') {
+                                    myRegression = ecStat.regression('polynomial', regression_points, 2);
+                                    myRegression.points.sort(function(a, b) {
+                                        return a[0] - b[0];
+                                    });
+                                    myRegression_with_R2 = regression.polynomial(regression_points, {order: 2});
+                                }
                                 var option = {
                                     //backgroundColor: '#fff',
                                     backgroundColor: 'rgba(255,255,255,0.8)',
                                     title: {
-                                        text: 'R2: ' + myRegression_with_R2.r2.toString(),
-                                        left: 'right'
+                                        //text: 'R2: ' + myRegression_with_R2.r2.toString() + '\n' + myRegression.expression,
+                                        text: get_chart_title(myRegression, myRegression_with_R2),
+                                        right: 'right',
+                                        textStyle: {
+                                            fontStyle: 'italic',
+                                            fontSize: 14
+                                        }
+
+
+
                                     },
                                     xAxis: {
                                         name: 'Concentration',
-                                        //splitLine: false,
                                         type: 'value',
                                         boundaryGap: false,
                                         min: 0,
                                         interval: 5
-                                        //data: get_clear_hData(hData)
-
-                                        //axisLabel: {
-                                            //interval: 0,
-                                            //rotate: -30
-                                        //}
-
-
                                     },
                                     yAxis: {
                                         name: get_selected_metabolo(),
-                                        type: 'value',
-                                        //splitLine: false
+                                        type: 'value'
                                     },
 
                                     grid: {
-                                        left: '0%',
+                                        left: '5%',
                                         right: '15%',
                                         containLabel: true
 
@@ -420,8 +514,9 @@
                                        {
                                         name: 'line',
                                         type: 'line',
+                                        smooth: true,
                                         showSymbol: false,
-                                        data: myRegression.points,
+                                        data: get_forced_points(myRegression.points, myRegression_with_R2.equation),
                                         markPoint: {
                                             itemStyle: {
                                                 normal: {
@@ -440,7 +535,7 @@
                                                 }
                                             },
                                             data: [{
-                                                coord: myRegression.points[myRegression.points.length - 1]
+                                                coord: myRegression.points[myRegression.points.length]
                                             }]
                                         }
 
@@ -599,6 +694,106 @@
                                 return table.rows('.selected').data()[0][0];
                             }
 
+                            function get_forced_points(regression_points, expression) {
+                                var res = [];
+                                var exp;
+                                if ($('#regression_origin').val() == 'default') {
+                                    return regression_points;
+                                }
+                                if ($('#regression_method').val() == 'linear') {
+                                    exp = [0, expression[0]];
+                                }
+                                if ($('#regression_method').val() == 'quadratic') {
+                                    exp = [expression[0], expression[1]];
+                                }
+                                for (var i = 0; i < regression_points.length; i++) {
+                                    res.push([regression_points[i][0], exp[0]*Math.pow(regression_points[i][0],2)+exp[1]*regression_points[i][0]]);
+                                }
+                                return res;
+                            }
+
+                            function cal_forced_R2(origin_points, forced_points) {
+                                var top = 0;
+                                var buttom = 0;
+                                var total = 0;
+                                var ave = 0;
+                                for (var i = 0; i < origin_points.length; i++) {
+                                    total += origin_points[i][1];
+                                }
+                                ave = total / origin_points.length;
+                                for (var j = 0; j < origin_points.length; j++) {
+                                    top += Math.pow(forced_points[j][1] - origin_points[j][1], 2);
+                                    buttom += Math.pow(origin_points[j][1] - ave, 2);
+                                }
+                                return (1 - (top / buttom)).toFixed(2);
+                            }
+
+                            function get_equation(equation) {
+                                if ($('#regression_method').val() == 'linear') {
+                                    return 'y = ' + equation[0].toString() + 'x';
+                                }
+                                if ($('#regression_method').val() == 'quadratic') {
+                                    return 'y = ' + equation[0].toString() + 'x^2' + equation[1] + 'x';
+                                }
+                            }
+
+                            function get_chart_title(myRegression, myRegression_with_R2) {
+                                if ($('#regression_origin').val() == 'default') {
+                                    return 'R2: ' + myRegression_with_R2.r2.toString() + '\n' + myRegression.expression;
+                                }
+                                if ($('#regression_origin').val() == 'forced') {
+                                    var regression_points = get_regression_points(two_dimen_data, selected, get_selected_metabolo());
+                                    var forced_points = get_forced_points(regression_points, myRegression_with_R2.equation);
+                                    return 'R2: ' +  cal_forced_R2(regression_points, forced_points).toString() + '\n' + get_equation(myRegression_with_R2.equation);
+                                }
+                            }
+
+                            function fill_main_table(resultData) {
+                                var cur_csv = resultData[5];
+                                var id = [];
+                                var concentration = [];
+                                var resp = [];
+                                var acc = [];
+                                var data_set = [];
+                                for (var i = 0; i < cur_csv['Concentration'].length; i++) {
+                                    if (cur_csv['Group'][i] == 'S') {
+                                        id.push(cur_csv['ID'][i]);
+                                        concentration.push(cur_csv['Concentration'][i]);
+                                        resp.push(cur_csv[get_selected_metabolo()][i].toFixed(2));
+                                    }
+                                }
+
+                                for (var j = 0; j < id.length; j++) {
+                                    acc.push((resp[j] / concentration[j]).toFixed(2).toString());
+                                }
+                                for (var k = 0; k < id.length; k++) {
+                                    var tmp = [];
+                                    tmp.push(id[k]);
+                                    tmp.push(concentration[k]);
+                                    tmp.push(resp[k]);
+                                    tmp.push(acc[k]);
+                                    data_set.push(tmp);
+                                }
+                                $('#main_table').DataTable({
+                                    data: data_set,
+                                    columns: [
+                                        { title: "ID" },
+                                        { title: "Concentration" },
+                                        { title: "Response" },
+                                        { title: "Accuracy" }
+                                    ],
+                                    destroy: true,
+                                    ordering: false,
+                                    searching: false,
+                                    paging: false,
+                                    info: false,
+                                    scrollY: "150px",
+                                    scrollCollapse: true
+
+                                })
+
+                            }
+
                         </script>
 
                 </div>
@@ -614,7 +809,6 @@
 
 
 
-    <script type="text/javascript">
-    </script>
+
 </body>
 </html>
