@@ -220,6 +220,16 @@
                                             </select>
                                         </div>
 
+                                        <div class="input-group mb-3">
+                                            <select id="regression_weight" class="custom-select">
+                                                <option selected value="None">None</option>
+                                                <option value="1/x">1/x</option>
+                                                <option value="1/x^2">1/x^2</option>
+                                                <option value="1/y">1/y</option>
+                                                <option value="1/y^2">1/y^2</option>
+                                            </select>
+                                        </div>
+
 
                                 </div>
 
@@ -352,11 +362,22 @@
                             $('#regression_method').on('change', function() {
                                option = get_option(two_dimen_data, selected, get_selected_metabolo());
                                myChart.setOption(option);
+                               var nor = $('#IS_Normalisation').prop("checked");
+
                             });
 
                             $('#regression_origin').on('change', function() {
                                 option = get_option(two_dimen_data, selected, get_selected_metabolo());
                                 myChart.setOption(option);
+                                var nor = $('#IS_Normalisation').prop("checked");
+
+                            });
+
+                            $('#regression_weight').on('change', function() {
+                                option = get_option(two_dimen_data, selected, get_selected_metabolo());
+                                myChart.setOption(option);
+                                var nor = $('#IS_Normalisation').prop("checked");
+
                             });
                             $(function () {
                                 if ('{{ try }}' == 'False'){
@@ -437,6 +458,7 @@
                             }
 
                             function get_option(two_dimen_data, selected, dataY) {
+                                /*
                                 var regression_points = get_regression_points(two_dimen_data, selected, dataY);
                                 var myRegression;
                                 var myRegression_with_R2;
@@ -454,107 +476,130 @@
                                     });
                                     myRegression_with_R2 = regression.polynomial(regression_points, {order: 2});
                                 }
-                                var option = {
-                                    //backgroundColor: '#fff',
-                                    backgroundColor: 'rgba(255,255,255,0.8)',
-                                    title: {
-                                        //text: 'R2: ' + myRegression_with_R2.r2.toString() + '\n' + myRegression.expression,
-                                        text: get_chart_title(myRegression, myRegression_with_R2),
-                                        right: 'right',
-                                        textStyle: {
-                                            fontStyle: 'italic',
-                                            fontSize: 14
-                                        }
-
-
-
+                                */
+                                var option = {};
+                                $.ajax({
+                                    type: 'POST',
+                                    async: false,
+                                    traditional: true,
+                                    url: '../weighted_regression/',
+                                    dataType: 'json',
+                                    data: {
+                                        'csrfmiddlewaretoken': '{{ csrf_token }}',
+                                        'points':  JSON.stringify(get_regression_points(two_dimen_data, selected, get_selected_metabolo())),
+                                        'weight': $('#regression_weight').val(),
+                                        'regression_method': $('#regression_method').val()
                                     },
-                                    xAxis: {
-                                        name: 'Concentration',
-                                        type: 'value',
-                                        boundaryGap: false,
-                                        min: 0,
-                                        interval: 5
-                                    },
-                                    yAxis: {
-                                        name: get_selected_metabolo(),
-                                        type: 'value'
-                                    },
-
-                                    grid: {
-                                        left: '5%',
-                                        right: '15%',
-                                        containLabel: true
-
-                                    },
-
-                                    dataZoom: {
-                                        show: true,
-                                        realtime: true,
-                                        height: 20
-                                    },
-
-                                    series: [{
-                                        name: get_selected_metabolo(),
-                                        type: 'scatter',
-                                        //data: [],
-                                        data: two_dimen_data,
-                                        itemStyle: {
-                                            normal: {
-                                                //color: '#d94e5d'
-                                                color: function(para) {
-                                                    //var para = para;
-                                                    if (selected[para.dataIndex + ',' + dataY]) {return '#eac736';}
-                                                    else {return '#d94e5d';}
-                                                }
-                                            }
-                                        }
-
-                                        },
-                                       {
-                                        name: 'line',
-                                        type: 'line',
-                                        smooth: true,
-                                        showSymbol: false,
-                                        data: get_forced_points(myRegression.points, myRegression_with_R2.equation),
-                                        markPoint: {
-                                            itemStyle: {
-                                                normal: {
-                                                    color: 'transparent'
+                                    success: function(result) {
+                                        var points = result['points'];
+                                        var predicted_points = result['predicted_points'];
+                                        var expression = result['expression'];
+                                        var equation = result['equation'];
+                                        option = {
+                                            backgroundColor: 'rgba(255,255,255,0.8)',
+                                            title: {
+                                                //text: 'R2: ' + myRegression_with_R2.r2.toString() + '\n' + myRegression.expression,
+                                                //text: get_chart_title(myRegression, myRegression_with_R2),
+                                                text: get_chart_title(points, predicted_points, expression, equation),
+                                                right: 'right',
+                                                textStyle: {
+                                                    fontStyle: 'italic',
+                                                    fontSize: 14
                                                 }
                                             },
-                                            label: {
-                                                normal: {
-                                                    show: false,
-                                                    position: 'left',
-                                                    formatter: myRegression.expression,
-                                                    textStyle: {
-                                                        color: '#333',
-                                                        fontSize: 14
+                                            xAxis: {
+                                                name: 'Concentration',
+                                                type: 'value',
+                                                boundaryGap: false,
+                                                min: 0,
+                                                interval: 5
+                                            },
+                                            yAxis: {
+                                                name: get_selected_metabolo(),
+                                                type: 'value'
+                                            },
+
+                                            grid: {
+                                                left: '5%',
+                                                right: '15%',
+                                                containLabel: true
+
+                                            },
+
+                                            dataZoom: {
+                                                show: true,
+                                                realtime: true,
+                                                height: 20
+                                            },
+
+                                            series: [{
+                                                name: get_selected_metabolo(),
+                                                type: 'scatter',
+                                                //data: [],
+                                                data: two_dimen_data,
+                                                itemStyle: {
+                                                    normal: {
+                                                        //color: '#d94e5d'
+                                                        color: function(para) {
+                                                            //var para = para;
+                                                            if (selected[para.dataIndex + ',' + dataY]) {return '#eac736';}
+                                                            else {return '#d94e5d';}
+                                                        }
                                                     }
                                                 }
-                                            },
-                                            data: [{
-                                                coord: myRegression.points[myRegression.points.length]
-                                            }]
-                                        }
+
+                                                },
+                                               {
+                                                name: 'line',
+                                                type: 'line',
+                                                smooth: true,
+                                                showSymbol: false,
+                                                data: get_forced_points(predicted_points, equation),
+
+                                                markPoint: {
+                                                    itemStyle: {
+                                                        normal: {
+                                                            color: 'transparent'
+                                                        }
+                                                    },
+                                                    label: {
+                                                        normal: {
+                                                            show: false,
+                                                            position: 'left',
+                                                            formatter: expression,
+                                                            textStyle: {
+                                                                color: '#333',
+                                                                fontSize: 14
+                                                            }
+                                                        }
+                                                    },
+                                                    data: [{
+                                                        coord: points[points.length - 1]
+                                                    }]
+                                                }
+
+                                            }
+
+
+                                            ],
+
+                                            tooltip: {
+                                                trigger: 'item',
+                                                triggerOn: 'mousemove',
+                                                //showContent: true,
+                                                formatter: function (para) {
+                                                    return option.xAxis.name + '  :  ' + para.data[0] + '<br/>'
+                                                         + option.yAxis.name + '  :  ' + para.data[1] + '<br/>';
+                                                }
+                                                }
+                                            };
 
                                     }
-
-
-                                    ],
-
-                                    tooltip: {
-                                        trigger: 'item',
-                                        triggerOn: 'mousemove',
-                                        //showContent: true,
-                                        formatter: function (para) {
-                                            return option.xAxis.name + '  :  ' + para.data[0] + '<br/>'
-                                                 + option.yAxis.name + '  :  ' + para.data[1] + '<br/>';
-                                        }
-                                        }
-                                    };
+                                });
                                 return option;
+
+
+
                             }
 
                             function draw_chart(originData, dataX, dataY) {
@@ -701,10 +746,10 @@
                                     return regression_points;
                                 }
                                 if ($('#regression_method').val() == 'linear') {
-                                    exp = [0, expression[0]];
+                                    exp = [0, expression[1]];
                                 }
                                 if ($('#regression_method').val() == 'quadratic') {
-                                    exp = [expression[0], expression[1]];
+                                    exp = [expression[2], expression[1]];
                                 }
                                 for (var i = 0; i < regression_points.length; i++) {
                                     res.push([regression_points[i][0], exp[0]*Math.pow(regression_points[i][0],2)+exp[1]*regression_points[i][0]]);
@@ -728,23 +773,15 @@
                                 return (1 - (top / buttom)).toFixed(2);
                             }
 
-                            function get_equation(equation) {
-                                if ($('#regression_method').val() == 'linear') {
-                                    return 'y = ' + equation[0].toString() + 'x';
-                                }
-                                if ($('#regression_method').val() == 'quadratic') {
-                                    return 'y = ' + equation[0].toString() + 'x^2' + equation[1] + 'x';
-                                }
-                            }
-
-                            function get_chart_title(myRegression, myRegression_with_R2) {
+                            function get_chart_title(points, predict_points, expression, equation) {
                                 if ($('#regression_origin').val() == 'default') {
-                                    return 'R2: ' + myRegression_with_R2.r2.toString() + '\n' + myRegression.expression;
+                                    //return 'R2: ' + myRegression_with_R2.r2.toString() + '\n' + myRegression.expression;
+                                    return 'R2: ' + cal_forced_R2(points, predict_points).toString() + '\n' + expression
+
                                 }
                                 if ($('#regression_origin').val() == 'forced') {
-                                    var regression_points = get_regression_points(two_dimen_data, selected, get_selected_metabolo());
-                                    var forced_points = get_forced_points(regression_points, myRegression_with_R2.equation);
-                                    return 'R2: ' +  cal_forced_R2(regression_points, forced_points).toString() + '\n' + get_equation(myRegression_with_R2.equation);
+                                    var forced_points = get_forced_points(predict_points, equation);
+                                    return 'R2: ' +  cal_forced_R2(points, forced_points).toString() + '\n' + expression
                                 }
                             }
 
@@ -793,6 +830,9 @@
                                 })
 
                             }
+
+
+
 
                         </script>
 

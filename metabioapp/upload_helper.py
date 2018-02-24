@@ -126,6 +126,24 @@ def generate_filtered_output(input_file, output_path):
         if os.path.isfile(output_path):
             os.remove(output_path)
 
+def cal_predict_points(points, equation):
+    res = []
+    if len(equation) == 3:
+        for each in points:
+            res.append([each[0], equation[0] + each[0]*equation[1] + each[0]*each[0]*equation[2]])
+        return res
+    elif len(equation) == 2:
+        for each in points:
+            res.append([each[0], equation[0] + each[0]*equation[1]])
+        return res
+
+def cal_expression(equation):
+    if len(equation) == 3:
+        return 'y = ' + str(round(equation[2], 2)) + 'x^2 + ' + str(round(equation[1], 2)) + 'x + ' + str(round(equation[0], 2))
+    elif len(equation) == 2:
+        return 'y = ' + str(round(equation[1], 2)) + 'x + ' + str(round(equation[0], 2))
+
+
 
 
 

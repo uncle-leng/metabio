@@ -26,5 +26,6 @@ urlpatterns = [
     path('show_graph/', views.show_graph),
     path('show_try_graph', views.show_try_graph),
     path('show_result/', views.show_result),
-    path('result_page/', views.result_page)
+    path('result_page/', views.result_page),
+    path('weighted_regression/', views.weighted_regression)
 ]

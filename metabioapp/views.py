@@ -4,12 +4,15 @@ from django.shortcuts import render, HttpResponse, HttpResponseRedirect
 from django.core.files import File
 from django.http import StreamingHttpResponse
 from django.contrib import messages
+from numpy.polynomial import polynomial as poly
 from .models import UploadFile, DownloadFile, OutputJSON, InputJSON
 from .models import UploadFileForm
 import os
 import json
-from .upload_helper import valid_file, transfer_to_json, transfer_to_inputjson, generate_filtered_input, generate_filtered_output
+from .upload_helper import valid_file, transfer_to_json, transfer_to_inputjson, \
+    generate_filtered_input, generate_filtered_output, cal_predict_points, cal_expression
 from .new_conc import generate_output
+
 
 
 # Create your views here.
@@ -208,9 +211,6 @@ def upload(request):
                                               'visualization': False,
                                               'typeError': False})
 
-
-
-
 def download_sample(request):
     def file_iterator(filename, chunk_size=512):
         with open(filename, 'r') as f:
@@ -232,8 +232,6 @@ def show_graph(request):
     input_json_pk = request.GET.get('input_json_pk', None)
     input_json_file = InputJSON.objects.get(pk=int(input_json_pk)).input_json
     return HttpResponse(input_json_file)
-
-
 
 def show_result(request):
     selected = json.loads(request.POST['selected'])
@@ -264,7 +262,6 @@ def show_result(request):
 
 def result_page(request):
     return render(request, 'result_page.html')
-
 
 def download(request):
     def file_iterator(filename, chunk_size=512):
@@ -300,12 +297,65 @@ def download(request):
     '''
     return response
 
-
 def show_try_graph(request):
     with open('./static/sample_input_json.json', 'r') as f:
         json_response = json.load(f)
     f.close()
     return HttpResponse(json.dumps(json_response))
+
+def weighted_regression(request):
+    if request.method == 'POST':
+        equation = []
+        weight = request.POST['weight']
+        dataX = []
+        dataY = []
+        weights = []
+        res = {}
+        points = json.loads(request.POST['points'])
+        for each_point in points:
+            if weight == 'None':
+                weights.append(1)
+            if weight == '1/x':
+                if each_point[0] == 0:
+                    weights.append(0)
+                else:
+                    weights.append(1 / each_point[0])
+            if weight == '1/x^2':
+                if each_point[0] == 0:
+                    weights.append(0)
+                else:
+                    weights.append(1 / (each_point[0] ** 2))
+            if weight == '1/y':
+                if each_point[1] == 0:
+                    weights.append(0)
+                else:
+                    weights.append(1 / each_point[1])
+            if weight == '1/y^2':
+                if each_point[1] == 0:
+                    weights.append(0)
+                else:
+                    weights.append(1 / (each_point[1] ** 2))
+            dataX.append(each_point[0])
+            dataY.append(each_point[1])
+        if request.POST['regression_method'] == 'quadratic':
+            equation, stats = poly.polyfit(x=dataX, y=dataY, deg=2, w=weights, full=True)
+        if request.POST['regression_method'] == 'linear':
+            equation, stats = poly.polyfit(x=dataX, y=dataY, deg=1, w=weights, full=True)
+        res['points'] = points
+        res['equation'] = equation.tolist()
+        res['predicted_points'] = cal_predict_points(points, equation.tolist())
+        res['expression'] = cal_expression(equation.tolist())
+        return HttpResponse(json.dumps(res))
+
+
+
+
+
+
+
+
+
+
 
 
 
