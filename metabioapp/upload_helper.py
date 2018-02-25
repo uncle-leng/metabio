@@ -98,7 +98,6 @@ def transfer_to_inputjson(input_path, output_path):
 
 def generate_filtered_input(input_path, selected, offset):
     res = []
-
     with open(input_path, 'r') as f:
         reader = csv.reader(f)
         rows = [row for row in reader]
@@ -107,7 +106,11 @@ def generate_filtered_input(input_path, selected, offset):
             for j in range(len(categories)):
                 index = str(i-1-int(offset))+','+categories[j]
                 if (index in selected) and (selected[index]):
+                    for k in range(int(offset)+1, len(rows)):
+                        if rows[k][0] == rows[i][0] and rows[k][1] == rows[i][1] and rows[k][j+4] == rows[i][j+4]:
+                            rows[k][j+4] = 0
                     rows[i][j+4] = 0
+
         for k in range(len(rows)):
             res.append(rows[k])
 
