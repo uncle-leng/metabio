@@ -7,29 +7,16 @@
     <link rel="stylesheet" href="{% static 'css/main_page.css' %}">
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
     <link href="https://fonts.googleapis.com/css?family=PT+Serif" rel="stylesheet">
-    <!--
-    <link rel="stylesheet" href="{% static 'css/datatables.min.css' %}">
-    -->
     <link rel="stylesheet" href="//cdn.datatables.net/1.10.16/css/jquery.dataTables.min.css">
-    <!--<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.2.13/semantic.min.css">-->
-    <!--<link rel="stylesheet" href="https://cdn.datatables.net/1.10.16/css/dataTables.semanticui.min.css">-->
-
-
 
     <meta charset="UTF-8">
     <script type="text/javascript" src="../static/js/echarts.js"></script>
     <script type="text/javascript" src="../static/js/jquery-3.2.1.js"></script>
-    <!--<script type="text/javascript" src="../static/js/ecStat.js"></script>-->
-    <!--<script type="text/javascript" src="../static/js/regression.js"></script>-->
     <script type="text/javascript" src="../static/js/jquery.particleground.min.js"></script>
     <script type="text/javascript" src="../static/js/demo.js"></script>
-    <!--<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.2.13/semantic.min.js"></script>-->
-    <!--<script type="text/javascript" src="https://cdn.datatables.net/1.10.16/js/dataTables.semanticui.min.js"></script>-->
-    <!--
-    <script type="text/javascript" src="../static/js/datatables.js"></script>
-    -->
     <script type="text/javascript" src="https://cdn.datatables.net/1.10.16/js/jquery.dataTables.min.js"></script>
     <script type="text/javascript" src="../static/js/bootstrap.min.js"></script>
+
 
     <title>Metabolomics Tool</title>
 </head>
@@ -70,37 +57,6 @@
     <div id="particles">
         <div class="intro container-fluid">
             <div class="row-fluid">
-            <!--
-                <div class="left">
-
-                    {% if home %}
-                        <nav class="nav flex-column">
-                            <a class="nav-link active" href="">Home</a>
-                            <a class="nav-link disabled" href="#">Upload</a>
-                            <a class="nav-link disabled" href="#">Visualization</a>
-                        </nav>
-                    {% endif %}
-
-                    {% if upload %}
-                        <nav class="nav flex-column">
-                            <a class="nav-link disabled" href="">Home</a>
-                            <a class="nav-link active" href="#">Upload</a>
-                            <a class="nav-link disabled" href="#">Visualization</a>
-                        </nav>
-                    {% endif %}
-
-                    {% if visualization %}
-                        <nav class="nav flex-column">
-                            <a class="nav-link disabled" href="">Home</a>
-                            <a class="nav-link disabled" href="#">Upload</a>
-                            <a class="nav-link active" href="#">Visualization</a>
-                        </nav>
-                    {% endif %}
-
-                </div>
-            -->
-
-
                 <div class="right" style="color: #1b1e21">
 
                     {% if home %}
@@ -123,7 +79,6 @@
                         </div>
                     {% endif %}
 
-
                     {% if upload %}
                          <h1 class="introduction_text">Text</h1>
                          <h2 class="introduction_text">lorem epsum</h2>
@@ -138,12 +93,7 @@
 
                         <h1 class="introduction_text">Upload your own file</h1>
 
-
-
                         <div class="form-group">
-                            <!--<span class="h3">upload file</span>-->
-
-
 
                             <form method="post" enctype="multipart/form-data">
                                 {% csrf_token %}
@@ -159,7 +109,6 @@
                                                 {% endif %}
                                             </label>
                                         </p>
-
                                     </div>
                                     {% if typeError %}
                                         <p style="color: red; margin-top: 0; font-size: .875rem;"> invalid file !</p>
@@ -171,14 +120,12 @@
                          </div>
                     {% endif %}
 
-
                     {% if visualization %}
                         <div class="container">
 
                             <div class="row" class="col-md-12">
 
                                 <div class="col-md-2">
-
                                     <div class="row col-md-2">
                                         <table id="dataY" class="row-border" cellspacing="0">
                                             <thead>
@@ -194,7 +141,9 @@
                                         <input type="button" id="show_result" value="show result" class="btn btn-outline-danger">
                                     </div>
                                 </div>
+
                                 <div id="chart" class="col-md-8"></div>
+
                                 <div id="control_panel" class="col-md-2">
 
                                         <div class="form-group">
@@ -213,7 +162,6 @@
                                               <option value="quadratic">quadratic</option>
                                             </select>
 
-
                                             <select id="regression_origin" class="custom-select">
                                                 <option selected value="default">default</option>
                                                 <option value="forced">forced</option>
@@ -230,647 +178,589 @@
                                             </select>
                                         </div>
 
-
                                 </div>
 
                             </div>
 
                             <div class="row" class="col-md-12">
                                 <table id="main_table" class="row-border" width="100%"></table>
-
                             </div>
-
                         </div>
-
                     {% endif %}
-
-
                 </div>
-                        <script type="text/javascript">
-                            var myChart = echarts.init(document.getElementById('chart'), '', {devicePixelRatio: 2});
-                            var selected = {};
-                            var checkboxes = {};
-                            var two_dimen_data = [];
-                            var option;
-                            var data; //copied originData
-                            var offset;
-                            var all_metabolo = [];
-                            var table;
-                            myChart.on('click', function(para) {
-                                var origin_index = para.dataIndex;
-                                if (!selected.hasOwnProperty(origin_index + ',' + get_selected_metabolo())) {
-                                    selected[origin_index + ',' + get_selected_metabolo()] = true;
-                                }
-                                else {
-                                    selected[origin_index + ',' + get_selected_metabolo()] = !selected[origin_index + ',' + get_selected_metabolo()];
-                                }
-                                option = get_option(two_dimen_data, selected, get_selected_metabolo());
-                                myChart.setOption(option);
-
-                                var nor = $('#IS_Normalisation').prop("checked");
-                                $.ajax({
-                                    type: 'POST',
-                                    async: true,
-                                    traditional: true,
-                                    url: '../show_result/',
-                                    dataType: 'json',
-                                    data: {'selected': JSON.stringify(selected),
-                                            'input_json_pk': {{ input_json_pk }},
-                                            'offset': offset.toString(),
-                                            'is_nor': nor.toString(),
-                                            'csrfmiddlewaretoken': '{{ csrf_token }}'},
-                                    success: function(result) {
-                                        fill_main_table(result);
-                                        $('#table').DataTable().destroy();
-                                    },
-                                    error: function() {alert('can not show result!!!')}
-                                })
 
 
 
-                            });
 
-                            $('#IS_Normalisation').on('click', function() {
-
-                                checkboxes = update_checkboxes();
-                                var new_data = originData_to_checkboxData(data, checkboxes);
-                                var dataY = get_selected_metabolo();
-                                draw_chart(new_data, 'Concentration', dataY);
-                            });
-
-                            $('#Reagent_Blank_Subtraction').on('click', function() {
-                                checkboxes = update_checkboxes();
-                                var new_data = originData_to_checkboxData(data, checkboxes);
-                                var dataY = get_selected_metabolo();
-                                draw_chart(new_data, 'Concentration', dataY);
-                            });
-
-                            $('#show_result').on('click', function() {
-                                var nor = $('#IS_Normalisation').prop("checked");
-                                $.ajax({
-                                    type: 'POST',
-                                    async: true,
-                                    traditional: true,
-                                    url: '../show_result/',
-                                    dataType: 'json',
-                                    data: {'selected': JSON.stringify(selected),
-                                            'input_json_pk': {{ input_json_pk }},
-                                            'offset': offset.toString(),
-                                            'is_nor': nor.toString(),
-                                            'csrfmiddlewaretoken': '{{ csrf_token }}'},
-                                    success: function(result) {
-                                        window.sessionStorage.setItem("result_data", JSON.stringify(result));
-                                        window.sessionStorage.setItem('selected', JSON.stringify(selected));
-                                        window.sessionStorage.setItem('input_json_pk', {{ input_json_pk }});
-                                        window.sessionStorage.setItem('offset', offset.toString());
-                                        window.sessionStorage.setItem('is_nor', nor.toString());
-                                        window.location.href = './result_page/';
-                                    },
-                                    error: function() {alert('can not show result!!!')}
-                                })
-                            });
-
-                            $('#dataY tbody').on('click', 'tr', function() {
-                                two_dimen_data = [];
-                                var dataX = 'Concentration';
-                                table.$('tr.selected').removeClass('selected');
-                                $(this).addClass('selected');
-                                var dataY = get_selected_metabolo();
-                                draw_chart(data, dataX, dataY);
-
-                                var nor = $('#IS_Normalisation').prop("checked");
-                                $.ajax({
-                                    type: 'POST',
-                                    async: true,
-                                    traditional: true,
-                                    url: '../show_result/',
-                                    dataType: 'json',
-                                    data: {'selected': JSON.stringify(selected),
-                                            'input_json_pk': {{ input_json_pk }},
-                                            'offset': offset.toString(),
-                                            'is_nor': nor.toString(),
-                                            'csrfmiddlewaretoken': '{{ csrf_token }}'},
-                                    success: function(result) {
-                                        $('#table').DataTable().destroy();
-                                        fill_main_table(result);
-                                    },
-                                    error: function() {alert('can not show result!!!')}
-                                })
-
-                            });
-
-                            $('#regression_method').on('change', function() {
-                               option = get_option(two_dimen_data, selected, get_selected_metabolo());
-                               myChart.setOption(option);
-                               var nor = $('#IS_Normalisation').prop("checked");
-
-                            });
-
-                            $('#regression_origin').on('change', function() {
-                                option = get_option(two_dimen_data, selected, get_selected_metabolo());
-                                myChart.setOption(option);
-                                var nor = $('#IS_Normalisation').prop("checked");
-
-                            });
-
-                            $('#regression_weight').on('change', function() {
-                                option = get_option(two_dimen_data, selected, get_selected_metabolo());
-                                myChart.setOption(option);
-                                var nor = $('#IS_Normalisation').prop("checked");
-
-                            });
-
-                            $(function () {
-                                if ('{{ try }}' == 'False'){
-                                    $.ajax({
-                                    type: 'GET',
-                                    async: true,
-                                    url: '../show_graph',
-                                    dataType: 'json',
-                                    data: {
-                                        'input_json_pk': {{ input_json_pk }}
-                                    },
-                                    success: function(originData) {
-                                        data = originData;
-                                        fill_in_table(originData);
-                                        table = $('#dataY').DataTable({"scrollY": "200px",
-                                                                "scrollCollapse": true,
-                                                                "paging": false,
-                                                                "searching": false,
-                                                                "info": false,
-                                                                "select": true});
-                                        //var dataY_id = '#' + all_metabolo.sort()[0];
-                                        //var dataY_id = '#' + get_selected_metabolo();
-                                        //$(dataY_id).click();
-                                        $('#dataY tbody tr:eq(0)').click()
-                                        },
-                                        error: function() {
-                                            alert('error!')
-                                        }
-                                        })
-                                }
-                                else {
-                                    $.ajax({
-                                       type: 'POST',
-                                       async: true,
-                                       url: '../show_try_graph',
-                                       dataType: 'json',
-                                       data: {"try": 'true',
-                                           'csrfmiddlewaretoken': '{{ csrf_token }}'},
-                                       success: function(originData) {
-                                          data = originData;
-                                          fill_in_table(originData);
-                                          table = $('#dataY').DataTable({"scrollY": "200px",
-                                                                "scrollCollapse": true,
-                                                                "paging": false,
-                                                                "searching": false,
-                                                                "info": false,
-                                                                "select": true});
-                                          //var dataY_id = '#' + all_metabolo.sort()[0];
-                                           // var dataY_id = '#' + get_selected_metabolo();
-                                          //$(dataY_id).click();
-                                          $('#dataY tbody tr:eq(0)').click()
-                                       },
-                                        error: function() {
-                                            alert('error!')
-                                        }
-                                    })
-                                }
-                                });
-
-                            function get_length(obj) {
-                                var size = 0;
-                                for (key in obj) {
-                                    if (obj.hasOwnProperty(key)) {
-                                        size ++;
-                                    }
-                                }
-                                return size;
-                            }
-
-                            function contains(arr, obj) {
-                                for (var i = 0; i < arr.length; i++) {
-                                    if ((obj[0] == arr[i][0]) && (obj[1] == arr[i][1])) {return true;}
-                                }
-                                return false;
-
-                            }
-
-                            function get_regression_points(two_dimen_data, selected, dataY) {
-                                var keep = [];
-                                var ignored = [];
-                                var res = [];
-                                for (var i = 0; i < two_dimen_data.length; i++) {
-                                    if (!selected.hasOwnProperty(i.toString() + ',' + dataY) || !selected[i.toString() + ',' + dataY]) {
-                                        keep.push(two_dimen_data[i]);
-                                    }
-                                    else {
-                                        ignored.push(two_dimen_data[i]);
-                                    }
-                                }
-
-                                for (var j = 0; j < keep.length; j++) {
-                                    if (!contains(ignored, keep[j])) {
-                                        res.push(keep[j]);
-                                    }
-                                }
-                                return res;
-                            }
-
-                            function get_option(two_dimen_data, selected, dataY) {
-                                /*
-                                var regression_points = get_regression_points(two_dimen_data, selected, dataY);
-                                var myRegression;
-                                var myRegression_with_R2;
-                                if ($('#regression_method').val() == 'linear') {
-                                    myRegression = ecStat.regression('linear', regression_points);
-                                    myRegression.points.sort(function (a, b) {
-                                        return a[0] - b[0];
-                                    });
-                                    myRegression_with_R2 = regression.linear(get_regression_points(two_dimen_data, selected, dataY));
-                                }
-                                if ($('#regression_method').val() == 'quadratic') {
-                                    myRegression = ecStat.regression('polynomial', regression_points, 2);
-                                    myRegression.points.sort(function(a, b) {
-                                        return a[0] - b[0];
-                                    });
-                                    myRegression_with_R2 = regression.polynomial(regression_points, {order: 2});
-                                }
-                                */
-                                var option = {};
-                                $.ajax({
-                                    type: 'POST',
-                                    async: false,
-                                    traditional: true,
-                                    url: '../weighted_regression/',
-                                    dataType: 'json',
-                                    data: {
-                                        'csrfmiddlewaretoken': '{{ csrf_token }}',
-                                        'points':  JSON.stringify(get_regression_points(two_dimen_data, selected, get_selected_metabolo())),
-                                        'weight': $('#regression_weight').val(),
-                                        'regression_method': $('#regression_method').val()
-                                    },
-                                    success: function(result) {
-                                        var points = result['points'];
-                                        var predicted_points = result['predicted_points'];
-                                        var expression = result['expression'];
-                                        var equation = result['equation'];
-                                        option = {
-                                            backgroundColor: 'rgba(255,255,255,0.8)',
-                                            title: {
-                                                //text: 'R2: ' + myRegression_with_R2.r2.toString() + '\n' + myRegression.expression,
-                                                //text: get_chart_title(myRegression, myRegression_with_R2),
-                                                text: get_chart_title(points, predicted_points, expression, equation),
-                                                right: 'right',
-                                                textStyle: {
-                                                    fontStyle: 'italic',
-                                                    fontSize: 14
-                                                }
-                                            },
-                                            xAxis: {
-                                                name: 'Concentration',
-                                                type: 'value',
-                                                boundaryGap: false,
-                                                min: 0,
-                                                interval: 5
-                                            },
-                                            yAxis: {
-                                                name: get_selected_metabolo(),
-                                                type: 'value'
-                                            },
-
-                                            grid: {
-                                                left: '5%',
-                                                right: '15%',
-                                                containLabel: true
-
-                                            },
-
-                                            dataZoom: {
-                                                show: true,
-                                                realtime: true,
-                                                height: 20
-                                            },
-
-                                            series: [{
-                                                name: get_selected_metabolo(),
-                                                type: 'scatter',
-                                                //data: [],
-                                                data: two_dimen_data,
-                                                itemStyle: {
-                                                    normal: {
-                                                        //color: '#d94e5d'
-                                                        color: function(para) {
-                                                            //var para = para;
-                                                            if (selected[para.dataIndex + ',' + dataY]) {return '#eac736';}
-                                                            else {return '#d94e5d';}
-                                                        }
-                                                    }
-                                                }
-
-                                                },
-                                               {
-                                                name: 'line',
-                                                type: 'line',
-                                                smooth: true,
-                                                showSymbol: false,
-                                                data: get_forced_points(predicted_points, equation),
-
-                                                markPoint: {
-                                                    itemStyle: {
-                                                        normal: {
-                                                            color: 'transparent'
-                                                        }
-                                                    },
-                                                    label: {
-                                                        normal: {
-                                                            show: false,
-                                                            position: 'left',
-                                                            formatter: expression,
-                                                            textStyle: {
-                                                                color: '#333',
-                                                                fontSize: 14
-                                                            }
-                                                        }
-                                                    },
-                                                    data: [{
-                                                        coord: points[points.length - 1]
-                                                    }]
-                                                }
-
-                                            }
-
-
-                                            ],
-
-                                            tooltip: {
-                                                trigger: 'item',
-                                                triggerOn: 'mousemove',
-                                                //showContent: true,
-                                                formatter: function (para) {
-                                                    return option.xAxis.name + '  :  ' + para.data[0] + '<br/>'
-                                                         + option.yAxis.name + '  :  ' + para.data[1] + '<br/>';
-                                                }
-                                                }
-                                            };
-
-                                    }
-                                });
-                                return option;
-
-
-
-                            }
-
-                            function draw_chart(originData, dataX, dataY) {
-                                myChart.showLoading();
-                                var hData = originData[dataX];
-                                var vData = originData[dataY];
-                                var row_num = 0;
-                                two_dimen_data = [];
-                                for (var i = 0; i < get_length(originData[dataX]); i++) {
-                                    if (originData['Group'][i] == 'S') {
-                                        two_dimen_data.push([hData[i], vData[i]]);
-                                    }
-                                }
-
-                                for (var j = 0; j < get_length(originData[dataX]); j++) {
-
-                                    if (originData['Group'][j] == 'S') {
-                                        offset = row_num;
-                                        break;
-                                    }
-                                    row_num += 1;
-                                }
-                                option = get_option(two_dimen_data, selected, dataY);
-                                myChart.hideLoading();
-                                myChart.setOption(option);
-                            }
-
-                            function update_checkboxes() {
-                                var none;
-                                var both;
-                                var nor = $('#IS_Normalisation').prop("checked");
-                                var rea = $('#Reagent_Blank_Subtraction').prop("checked");
-                                if (nor && rea) {both = true;}
-                                if (!nor && !rea) {none = true;}
-                                var checkboxes = {'none': none,
-                                              'nor': nor,
-                                              'rea': rea,
-                                              'both': both};
-                                return checkboxes;
-                            }
-
-                            function originData_to_is_nor(originData) {
-                                var data_copy = jQuery.extend(true, {}, originData);
-                                var IS_data = data_copy['IS'];
-                                for (var i = 0; i < IS_data.length; i++) {
-                                    if (data_copy['Group'][i] == 'S'){
-                                        data_copy[get_selected_metabolo()][i] /= IS_data[i];
-                                    }
-                                }
-                                return data_copy;
-                            }
-
-                            function originData_to_rea(originData) {
-                                var data_copy = jQuery.extend(true, {}, originData);
-                                var sum = 0;
-                                var count = 0;
-                                for (var i = 0; i < data_copy[get_selected_metabolo()].length; i++) {
-                                    if (data_copy['Group'][i] == 'R') {
-                                        sum += data_copy[get_selected_metabolo()][i];
-                                        count += 1;
-                                    }
-                                }
-                                var ave = sum / count;
-                                for (var j = 0; j < data_copy[get_selected_metabolo()].length; j++) {
-                                    if (data_copy['Group'][j] == 'S') {
-                                        data_copy[get_selected_metabolo()][j] -= ave;
-                                    }
-                                }
-                                return data_copy;
-                            }
-
-                            function originData_to_both(originData) {
-                                var data_copy = jQuery.extend(true, {}, originData);
-                                var sum = 0;
-                                var count = 0;
-                                for (var i = 0; i < data_copy[get_selected_metabolo()].length; i++) {
-                                    if (data_copy['Group'][i] == 'R') {
-                                        sum += data_copy[get_selected_metabolo()][i];
-                                        count += 1;
-                                    }
-                                }
-                                var ave = sum / count;
-                                for (var j = 0; j < data_copy[get_selected_metabolo()].length; j++) {
-                                    if (data_copy['Group'][j] == 'S') {
-                                        data_copy[get_selected_metabolo()][j] -= ave;
-                                    }
-                                }
-                                var IS_data = data_copy['IS'];
-                                for (var k =0; k < IS_data.length; k++) {
-                                    if (data_copy['Group'][k] == 'S') {
-                                        data_copy[get_selected_metabolo()][k] /= IS_data[k];
-                                    }
-                                }
-                                return data_copy;
-                            }
-
-                            function originData_to_checkboxData(originData, checkboxes) {
-                                if (checkboxes['none']) {
-                                    return originData;
-                                }
-                                else if (checkboxes['both']) {
-                                    return originData_to_both(originData);
-                                }
-                                else if (checkboxes['nor']) {
-                                    return originData_to_is_nor(originData);
-                                }
-                                else if (checkboxes['rea']) {
-                                    return originData_to_rea(originData);
-                                }
-                                else {
-                                    return originData;
-                                }
-                            }
-
-                            function fill_in_table(originData) {
-                                //var data_after_IS = originData_to_is_nor(originData);
-                                //var data_after_rea = originData_to_rea(originData);
-                                //var data_after_both = originData_to_both(originData);
-                                for (var each in originData) {
-                                    if (each != 'ID' && each != 'IS' && each != 'Concentration' && each != 'Group') {
-                                        //$('<tr />').appendTo($('#R2data'))
-                                            //.attr("id", each);
-                                        all_metabolo.push(each);
-                                        $('#metabolo').append("<tr id=" + each + "></tr>");
-                                        var eachid = '#' + each;
-                                        $(eachid).attr("style", "background-color: rgba(255,255,255,0.8)");
-                                        $(eachid).append("<td>" + each + "</td>");
-                                        //$(eachid).append("<td>" + calculate_R2(originData, 'Concentration', each, selected) + "</td>");
-                                        //$(eachid).append("<td>" + calculate_R2(data_after_IS, 'Concentration', each, selected) + "</td>");
-                                        //$(eachid).append("<td>" + calculate_R2(data_after_rea, 'Concentration', each, selected) + "</td>");
-                                        //$(eachid).append("<td>" + calculate_R2(data_after_both, 'Concentration', each, selected) + "</td>");
-                                    }
-                                }
-                            }
-
-                            function get_selected_metabolo() {
-                                return table.rows('.selected').data()[0][0];
-                            }
-
-                            function get_forced_points(regression_points, expression) {
-                                var res = [];
-                                var exp;
-                                if ($('#regression_origin').val() == 'default') {
-                                    return regression_points;
-                                }
-                                if ($('#regression_method').val() == 'linear') {
-                                    exp = [0, expression[1]];
-                                }
-                                if ($('#regression_method').val() == 'quadratic') {
-                                    exp = [expression[2], expression[1]];
-                                }
-                                for (var i = 0; i < regression_points.length; i++) {
-                                    res.push([regression_points[i][0], exp[0]*Math.pow(regression_points[i][0],2)+exp[1]*regression_points[i][0]]);
-                                }
-                                return res;
-                            }
-
-                            function cal_forced_R2(origin_points, forced_points) {
-                                var top = 0;
-                                var buttom = 0;
-                                var total = 0;
-                                var ave = 0;
-                                for (var i = 0; i < origin_points.length; i++) {
-                                    total += origin_points[i][1];
-                                }
-                                ave = total / origin_points.length;
-                                for (var j = 0; j < origin_points.length; j++) {
-                                    top += Math.pow(forced_points[j][1] - origin_points[j][1], 2);
-                                    buttom += Math.pow(origin_points[j][1] - ave, 2);
-                                }
-                                return (1 - (top / buttom)).toFixed(2);
-                            }
-
-                            function get_chart_title(points, predict_points, expression, equation) {
-                                if ($('#regression_origin').val() == 'default') {
-                                    //return 'R2: ' + myRegression_with_R2.r2.toString() + '\n' + myRegression.expression;
-                                    return 'R2: ' + cal_forced_R2(points, predict_points).toString() + '\n' + expression
-
-                                }
-                                if ($('#regression_origin').val() == 'forced') {
-                                    var forced_points = get_forced_points(predict_points, equation);
-                                    return 'R2: ' +  cal_forced_R2(points, forced_points).toString() + '\n' + get_forced_expression(expression);
-                                }
-                            }
-
-                            function fill_main_table(resultData) {
-                                var cur_csv = resultData[5];
-                                var id = [];
-                                var concentration = [];
-                                var resp = [];
-                                var acc = [];
-                                var data_set = [];
-                                for (var i = 0; i < cur_csv['Concentration'].length; i++) {
-                                    if (cur_csv['Group'][i] == 'S') {
-                                        id.push(cur_csv['ID'][i]);
-                                        concentration.push(cur_csv['Concentration'][i]);
-                                        resp.push(cur_csv[get_selected_metabolo()][i].toFixed(2));
-                                    }
-                                }
-
-                                for (var j = 0; j < id.length; j++) {
-                                    acc.push((resp[j] / concentration[j]).toFixed(2).toString());
-                                }
-                                for (var k = 0; k < id.length; k++) {
-                                    var tmp = [];
-                                    tmp.push(id[k]);
-                                    tmp.push(concentration[k]);
-                                    tmp.push(resp[k]);
-                                    tmp.push(acc[k]);
-                                    data_set.push(tmp);
-                                }
-                                $('#main_table').DataTable({
-                                    data: data_set,
-                                    columns: [
-                                        { title: "ID" },
-                                        { title: "Concentration" },
-                                        { title: "Response" },
-                                        { title: "Accuracy" }
-                                    ],
-                                    destroy: true,
-                                    ordering: false,
-                                    searching: false,
-                                    paging: false,
-                                    info: false,
-                                    scrollY: "150px",
-                                    scrollCollapse: true
-
-                                })
-
-                            }
-
-                            function get_forced_expression(expression) {
-                                var tmp = expression.split('+');
-                                tmp.pop();
-                                return tmp.join('+');
-                            }
-
-
-
-                        </script>
 
                 </div>
             </div>
         </div>
     </div>
 
-
-
     <nav class="navbar fixed-bottom navbar-light bg-trans">
         <a class="navbar-brand" href="#">Contact: Dr. Saravanan Dayalan, sdayalan@unimelb.edu.au</a>
     </nav>
+
+
+    <script type="text/javascript">
+        var myChart = echarts.init(document.getElementById('chart'), '', {devicePixelRatio: 2});
+        var selected = {};
+        var checkboxes = {};
+        var two_dimen_data = [];
+        var option;
+        var data; //copied originData
+        var offset;
+        var all_metabolo = [];
+        var table;
+        myChart.on('click', function(para) {
+            var origin_index = para.dataIndex;
+            if (!selected.hasOwnProperty(origin_index + ',' + get_selected_metabolo())) {
+                selected[origin_index + ',' + get_selected_metabolo()] = true;
+            }
+            else {
+                selected[origin_index + ',' + get_selected_metabolo()] = !selected[origin_index + ',' + get_selected_metabolo()];
+            }
+            option = get_option(two_dimen_data, selected, get_selected_metabolo());
+            myChart.setOption(option);
+
+            var nor = $('#IS_Normalisation').prop("checked");
+            $.ajax({
+                type: 'POST',
+                async: true,
+                traditional: true,
+                url: '../show_result/',
+                dataType: 'json',
+                data: {'selected': JSON.stringify(selected),
+                        'input_json_pk': {{ input_json_pk }},
+                        'offset': offset.toString(),
+                        'is_nor': nor.toString(),
+                        'csrfmiddlewaretoken': '{{ csrf_token }}'},
+                success: function(result) {
+                    fill_main_table(result);
+                    $('#table').DataTable().destroy();
+                },
+                error: function() {alert('can not show result!!!')}
+            })
+        });
+
+        $('#IS_Normalisation').on('click', function() {
+
+            checkboxes = update_checkboxes();
+            var new_data = originData_to_checkboxData(data, checkboxes);
+            var dataY = get_selected_metabolo();
+            draw_chart(new_data, 'Concentration', dataY);
+        });
+
+        $('#Reagent_Blank_Subtraction').on('click', function() {
+            checkboxes = update_checkboxes();
+            var new_data = originData_to_checkboxData(data, checkboxes);
+            var dataY = get_selected_metabolo();
+            draw_chart(new_data, 'Concentration', dataY);
+        });
+
+        $('#show_result').on('click', function() {
+            var nor = $('#IS_Normalisation').prop("checked");
+            $.ajax({
+                type: 'POST',
+                async: true,
+                traditional: true,
+                url: '../show_result/',
+                dataType: 'json',
+                data: {'selected': JSON.stringify(selected),
+                        'input_json_pk': {{ input_json_pk }},
+                        'offset': offset.toString(),
+                        'is_nor': nor.toString(),
+                        'csrfmiddlewaretoken': '{{ csrf_token }}'},
+                success: function(result) {
+                    window.sessionStorage.setItem("result_data", JSON.stringify(result));
+                    window.sessionStorage.setItem('selected', JSON.stringify(selected));
+                    window.sessionStorage.setItem('input_json_pk', {{ input_json_pk }});
+                    window.sessionStorage.setItem('offset', offset.toString());
+                    window.sessionStorage.setItem('is_nor', nor.toString());
+                    window.location.href = './result_page/';
+                },
+                error: function() {alert('can not show result!!!')}
+            })
+        });
+
+        $('#dataY tbody').on('click', 'tr', function() {
+            two_dimen_data = [];
+            var dataX = 'Concentration';
+            table.$('tr.selected').removeClass('selected');
+            $(this).addClass('selected');
+            var dataY = get_selected_metabolo();
+            draw_chart(data, dataX, dataY);
+
+            var nor = $('#IS_Normalisation').prop("checked");
+            $.ajax({
+                type: 'POST',
+                async: true,
+                traditional: true,
+                url: '../show_result/',
+                dataType: 'json',
+                data: {'selected': JSON.stringify(selected),
+                        'input_json_pk': {{ input_json_pk }},
+                        'offset': offset.toString(),
+                        'is_nor': nor.toString(),
+                        'csrfmiddlewaretoken': '{{ csrf_token }}'},
+                success: function(result) {
+                    $('#table').DataTable().destroy();
+                    fill_main_table(result);
+                },
+                error: function() {alert('can not show result!!!')}
+            })
+
+        });
+
+        $('#regression_method').on('change', function() {
+           option = get_option(two_dimen_data, selected, get_selected_metabolo());
+           myChart.setOption(option);
+
+        });
+
+        $('#regression_origin').on('change', function() {
+            option = get_option(two_dimen_data, selected, get_selected_metabolo());
+            myChart.setOption(option);
+        });
+
+        $('#regression_weight').on('change', function() {
+            option = get_option(two_dimen_data, selected, get_selected_metabolo());
+            myChart.setOption(option);
+        });
+
+        $(function () {
+            if ('{{ try }}' == 'False'){
+                $.ajax({
+                type: 'GET',
+                async: true,
+                url: '../show_graph',
+                dataType: 'json',
+                data: {
+                    'input_json_pk': {{ input_json_pk }}
+                },
+                success: function(originData) {
+                    data = originData;
+                    fill_in_table(originData);
+                    table = $('#dataY').DataTable({"scrollY": "200px",
+                                            "scrollCollapse": true,
+                                            "paging": false,
+                                            "searching": false,
+                                            "info": false,
+                                            "select": true});
+                    $('#dataY tbody tr:eq(0)').click()
+                    },
+                    error: function() {
+                        alert('error!')
+                    }
+                    })
+            }
+            else {
+                $.ajax({
+                   type: 'POST',
+                   async: true,
+                   url: '../show_try_graph',
+                   dataType: 'json',
+                   data: {"try": 'true',
+                       'csrfmiddlewaretoken': '{{ csrf_token }}'},
+                   success: function(originData) {
+                      data = originData;
+                      fill_in_table(originData);
+                      table = $('#dataY').DataTable({"scrollY": "200px",
+                                            "scrollCollapse": true,
+                                            "paging": false,
+                                            "searching": false,
+                                            "info": false,
+                                            "select": true});
+                      $('#dataY tbody tr:eq(0)').click()
+                   },
+                    error: function() {
+                        alert('error!')
+                    }
+                })
+            }
+            });
+
+        function get_length(obj) {
+            var size = 0;
+            for (key in obj) {
+                if (obj.hasOwnProperty(key)) {
+                    size ++;
+                }
+            }
+            return size;
+        }
+
+        function contains(arr, obj) {
+            for (var i = 0; i < arr.length; i++) {
+                if ((obj[0] == arr[i][0]) && (obj[1] == arr[i][1])) {return true;}
+            }
+            return false;
+        }
+
+        function get_regression_points(two_dimen_data, selected, dataY) {
+            var keep = [];
+            var ignored = [];
+            var res = [];
+            for (var i = 0; i < two_dimen_data.length; i++) {
+                if (!selected.hasOwnProperty(i.toString() + ',' + dataY) || !selected[i.toString() + ',' + dataY]) {
+                    keep.push(two_dimen_data[i]);
+                }
+                else {
+                    ignored.push(two_dimen_data[i]);
+                }
+            }
+
+            for (var j = 0; j < keep.length; j++) {
+                if (!contains(ignored, keep[j])) {
+                    res.push(keep[j]);
+                }
+            }
+            return res;
+        }
+
+        function get_option(two_dimen_data, selected, dataY) {
+            var option = {};
+            $.ajax({
+                type: 'POST',
+                async: false,
+                traditional: true,
+                url: '../weighted_regression/',
+                dataType: 'json',
+                data: {
+                    'csrfmiddlewaretoken': '{{ csrf_token }}',
+                    'points':  JSON.stringify(get_regression_points(two_dimen_data, selected, get_selected_metabolo())),
+                    'weight': $('#regression_weight').val(),
+                    'regression_method': $('#regression_method').val()
+                },
+                success: function(result) {
+                    var points = result['points'];
+                    var predicted_points = result['predicted_points'];
+                    var expression = result['expression'];
+                    var equation = result['equation'];
+                    option = {
+                        backgroundColor: 'rgba(255,255,255,0.8)',
+                        title: {
+                            text: get_chart_title(points, predicted_points, expression, equation),
+                            right: 'right',
+                            textStyle: {
+                                fontStyle: 'italic',
+                                fontSize: 14
+                            }
+                        },
+                        xAxis: {
+                            name: 'Concentration',
+                            type: 'value',
+                            boundaryGap: false,
+                            min: 0,
+                            interval: 5
+                        },
+                        yAxis: {
+                            name: get_selected_metabolo(),
+                            type: 'value'
+                        },
+
+                        grid: {
+                            left: '5%',
+                            right: '15%',
+                            containLabel: true
+
+                        },
+
+                        dataZoom: {
+                            show: true,
+                            realtime: true,
+                            height: 20
+                        },
+
+                        series: [{
+                            name: get_selected_metabolo(),
+                            type: 'scatter',
+                            data: two_dimen_data,
+                            itemStyle: {
+                                normal: {
+                                    color: function(para) {
+                                        //var para = para;
+                                        if (selected[para.dataIndex + ',' + dataY]) {return '#eac736';}
+                                        else {return '#d94e5d';}
+                                    }
+                                }
+                            }
+
+                            },
+                           {
+                            name: 'line',
+                            type: 'line',
+                            smooth: true,
+                            showSymbol: false,
+                            data: get_forced_points(predicted_points, equation),
+
+                            markPoint: {
+                                itemStyle: {
+                                    normal: {
+                                        color: 'transparent'
+                                    }
+                                },
+                                label: {
+                                    normal: {
+                                        show: false,
+                                        position: 'left',
+                                        formatter: expression,
+                                        textStyle: {
+                                            color: '#333',
+                                            fontSize: 14
+                                        }
+                                    }
+                                },
+                                data: [{
+                                    coord: points[points.length - 1]
+                                }]
+                            }
+
+                        }
+
+                        ],
+
+                        tooltip: {
+                            trigger: 'item',
+                            triggerOn: 'mousemove',
+                            formatter: function (para) {
+                                return option.xAxis.name + '  :  ' + para.data[0] + '<br/>'
+                                     + option.yAxis.name + '  :  ' + para.data[1] + '<br/>';
+                            }
+                            }
+                        };
+
+                }
+            });
+            return option;
+        }
+
+        function draw_chart(originData, dataX, dataY) {
+            myChart.showLoading();
+            var hData = originData[dataX];
+            var vData = originData[dataY];
+            var row_num = 0;
+            two_dimen_data = [];
+            for (var i = 0; i < get_length(originData[dataX]); i++) {
+                if (originData['Group'][i] == 'S') {
+                    two_dimen_data.push([hData[i], vData[i]]);
+                }
+            }
+
+            for (var j = 0; j < get_length(originData[dataX]); j++) {
+                if (originData['Group'][j] == 'S') {
+                    offset = row_num;
+                    break;
+                }
+                row_num += 1;
+            }
+            option = get_option(two_dimen_data, selected, dataY);
+            myChart.hideLoading();
+            myChart.setOption(option);
+        }
+
+        function update_checkboxes() {
+            var none;
+            var both;
+            var nor = $('#IS_Normalisation').prop("checked");
+            var rea = $('#Reagent_Blank_Subtraction').prop("checked");
+            if (nor && rea) {both = true;}
+            if (!nor && !rea) {none = true;}
+            var checkboxes = {'none': none,
+                          'nor': nor,
+                          'rea': rea,
+                          'both': both};
+            return checkboxes;
+        }
+
+        function originData_to_is_nor(originData) {
+            var data_copy = jQuery.extend(true, {}, originData);
+            var IS_data = data_copy['IS'];
+            for (var i = 0; i < IS_data.length; i++) {
+                if (data_copy['Group'][i] == 'S'){
+                    data_copy[get_selected_metabolo()][i] /= IS_data[i];
+                }
+            }
+            return data_copy;
+        }
+
+        function originData_to_rea(originData) {
+            var data_copy = jQuery.extend(true, {}, originData);
+            var sum = 0;
+            var count = 0;
+            for (var i = 0; i < data_copy[get_selected_metabolo()].length; i++) {
+                if (data_copy['Group'][i] == 'R') {
+                    sum += data_copy[get_selected_metabolo()][i];
+                    count += 1;
+                }
+            }
+            var ave = sum / count;
+            for (var j = 0; j < data_copy[get_selected_metabolo()].length; j++) {
+                if (data_copy['Group'][j] == 'S') {
+                    data_copy[get_selected_metabolo()][j] -= ave;
+                }
+            }
+            return data_copy;
+        }
+
+        function originData_to_both(originData) {
+            var data_copy = jQuery.extend(true, {}, originData);
+            var sum = 0;
+            var count = 0;
+            for (var i = 0; i < data_copy[get_selected_metabolo()].length; i++) {
+                if (data_copy['Group'][i] == 'R') {
+                    sum += data_copy[get_selected_metabolo()][i];
+                    count += 1;
+                }
+            }
+            var ave = sum / count;
+            for (var j = 0; j < data_copy[get_selected_metabolo()].length; j++) {
+                if (data_copy['Group'][j] == 'S') {
+                    data_copy[get_selected_metabolo()][j] -= ave;
+                }
+            }
+            var IS_data = data_copy['IS'];
+            for (var k =0; k < IS_data.length; k++) {
+                if (data_copy['Group'][k] == 'S') {
+                    data_copy[get_selected_metabolo()][k] /= IS_data[k];
+                }
+            }
+            return data_copy;
+        }
+
+        function originData_to_checkboxData(originData, checkboxes) {
+            if (checkboxes['none']) {
+                return originData;
+            }
+            else if (checkboxes['both']) {
+                return originData_to_both(originData);
+            }
+            else if (checkboxes['nor']) {
+                return originData_to_is_nor(originData);
+            }
+            else if (checkboxes['rea']) {
+                return originData_to_rea(originData);
+            }
+            else {
+                return originData;
+            }
+        }
+
+        function fill_in_table(originData) {
+
+            for (var each in originData) {
+                if (each != 'ID' && each != 'IS' && each != 'Concentration' && each != 'Group') {
+                    all_metabolo.push(each);
+                    $('#metabolo').append("<tr id=" + each + "></tr>");
+                    var eachid = '#' + each;
+                    $(eachid).attr("style", "background-color: rgba(255,255,255,0.8)");
+                    $(eachid).append("<td>" + each + "</td>");
+                }
+            }
+        }
+
+        function get_selected_metabolo() {
+            return table.rows('.selected').data()[0][0];
+        }
+
+        function get_forced_points(regression_points, expression) {
+            var res = [];
+            var exp;
+            if ($('#regression_origin').val() == 'default') {
+                return regression_points;
+            }
+            if ($('#regression_method').val() == 'linear') {
+                exp = [0, expression[1]];
+            }
+            if ($('#regression_method').val() == 'quadratic') {
+                exp = [expression[2], expression[1]];
+            }
+            for (var i = 0; i < regression_points.length; i++) {
+                res.push([regression_points[i][0], exp[0]*Math.pow(regression_points[i][0],2)+exp[1]*regression_points[i][0]]);
+            }
+            return res;
+        }
+
+        function cal_forced_R2(origin_points, forced_points) {
+            var top = 0;
+            var buttom = 0;
+            var total = 0;
+            var ave = 0;
+            for (var i = 0; i < origin_points.length; i++) {
+                total += origin_points[i][1];
+            }
+            ave = total / origin_points.length;
+            for (var j = 0; j < origin_points.length; j++) {
+                top += Math.pow(forced_points[j][1] - origin_points[j][1], 2);
+                buttom += Math.pow(origin_points[j][1] - ave, 2);
+            }
+            return (1 - (top / buttom)).toFixed(2);
+        }
+
+        function get_chart_title(points, predict_points, expression, equation) {
+            if ($('#regression_origin').val() == 'default') {
+                return 'R2: ' + cal_forced_R2(points, predict_points).toString() + '\n' + expression
+
+            }
+            if ($('#regression_origin').val() == 'forced') {
+                var forced_points = get_forced_points(predict_points, equation);
+                return 'R2: ' +  cal_forced_R2(points, forced_points).toString() + '\n' + get_forced_expression(expression);
+            }
+        }
+
+        function fill_main_table(resultData) {
+            var cur_csv = resultData[5];
+            var id = [];
+            var concentration = [];
+            var resp = [];
+            var acc = [];
+            var data_set = [];
+            for (var i = 0; i < cur_csv['Concentration'].length; i++) {
+                if (cur_csv['Group'][i] == 'S') {
+                    id.push(cur_csv['ID'][i]);
+                    concentration.push(cur_csv['Concentration'][i]);
+                    resp.push(cur_csv[get_selected_metabolo()][i].toFixed(2));
+                }
+            }
+
+            for (var j = 0; j < id.length; j++) {
+                acc.push((100 * (resp[j] / concentration[j])).toFixed(2).toString() + '%');
+            }
+            for (var k = 0; k < id.length; k++) {
+                var tmp = [];
+                tmp.push(id[k]);
+                tmp.push(concentration[k]);
+                tmp.push(resp[k]);
+                tmp.push(acc[k]);
+                data_set.push(tmp);
+            }
+            $('#main_table').DataTable({
+                data: data_set,
+                columns: [
+                    { title: "ID" },
+                    { title: "Concentration" },
+                    { title: "Response" },
+                    { title: "Accuracy" }
+                ],
+                destroy: true,
+                ordering: false,
+                searching: false,
+                paging: false,
+                info: false,
+                scrollY: "150px",
+                scrollCollapse: true
+
+            })
+
+        }
+
+        function get_forced_expression(expression) {
+            var tmp = expression.split('+');
+            tmp.pop();
+            return tmp.join('+');
+        }
+    </script>
 
 
 
