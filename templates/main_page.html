@@ -19,8 +19,8 @@
     <meta charset="UTF-8">
     <script type="text/javascript" src="../static/js/echarts.js"></script>
     <script type="text/javascript" src="../static/js/jquery-3.2.1.js"></script>
-    <script type="text/javascript" src="../static/js/ecStat.js"></script>
-    <script type="text/javascript" src="../static/js/regression.js"></script>
+    <!--<script type="text/javascript" src="../static/js/ecStat.js"></script>-->
+    <!--<script type="text/javascript" src="../static/js/regression.js"></script>-->
     <script type="text/javascript" src="../static/js/jquery.particleground.min.js"></script>
     <script type="text/javascript" src="../static/js/demo.js"></script>
     <!--<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.2.13/semantic.min.js"></script>-->
@@ -801,7 +801,7 @@
                                 }
                                 if ($('#regression_origin').val() == 'forced') {
                                     var forced_points = get_forced_points(predict_points, equation);
-                                    return 'R2: ' +  cal_forced_R2(points, forced_points).toString() + '\n' + expression
+                                    return 'R2: ' +  cal_forced_R2(points, forced_points).toString() + '\n' + get_forced_expression(expression);
                                 }
                             }
 
@@ -851,6 +851,11 @@
 
                             }
 
+                            function get_forced_expression(expression) {
+                                var tmp = expression.split('+');
+                                tmp.pop();
+                                return tmp.join('+');
+                            }
 
 
 
