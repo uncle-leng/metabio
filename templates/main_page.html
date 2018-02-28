@@ -17,7 +17,6 @@
     <script type="text/javascript" src="https://cdn.datatables.net/1.10.16/js/jquery.dataTables.min.js"></script>
     <script type="text/javascript" src="../static/js/bootstrap.min.js"></script>
 
-
     <title>Metabolomics Tool</title>
 </head>
 <body style="font-family: 'PT Serif', serif">
@@ -29,28 +28,28 @@
         <a class="navbar-brand" href="#">Web based concentration calculation tool</a>
 
          {% if home %}
-                        <nav class="navbar">
-                            <a class="nav-link active" href="">Home</a>
-                            <a class="nav-link disabled" href="#">Upload</a>
-                            <a class="nav-link disabled" href="#">Visualization</a>
-                        </nav>
-                    {% endif %}
+            <nav class="navbar">
+                <a class="nav-link active" href="">Home</a>
+                <a class="nav-link disabled" href="#">Upload</a>
+                <a class="nav-link disabled" href="#">Visualization</a>
+            </nav>
+        {% endif %}
 
-                    {% if upload %}
-                        <nav class="navbar">
-                            <a class="nav-link disabled" href="">Home</a>
-                            <a class="nav-link active" href="#">Upload</a>
-                            <a class="nav-link disabled" href="#">Visualization</a>
-                        </nav>
-                    {% endif %}
+        {% if upload %}
+            <nav class="navbar">
+                <a class="nav-link disabled" href="">Home</a>
+                <a class="nav-link active" href="#">Upload</a>
+                <a class="nav-link disabled" href="#">Visualization</a>
+            </nav>
+        {% endif %}
 
-                    {% if visualization %}
-                        <nav class="navbar">
-                            <a class="nav-link disabled" href="">Home</a>
-                            <a class="nav-link disabled" href="#">Upload</a>
-                            <a class="nav-link active" href="#">Visualization</a>
-                        </nav>
-                    {% endif %}
+        {% if visualization %}
+            <nav class="navbar">
+                <a class="nav-link disabled" href="">Home</a>
+                <a class="nav-link disabled" href="#">Upload</a>
+                <a class="nav-link active" href="#">Visualization</a>
+            </nav>
+        {% endif %}
 
     </nav>
 
@@ -188,11 +187,6 @@
                         </div>
                     {% endif %}
                 </div>
-
-
-
-
-
                 </div>
             </div>
         </div>
@@ -214,6 +208,11 @@
         var all_metabolo = [];
         var table;
         myChart.on('click', function(para) {
+            /*
+            once the point in the chart is clicked, update the dictionary that store the selected points
+            and redraw the chart.
+             */
+
             var origin_index = para.dataIndex;
             if (!selected.hasOwnProperty(origin_index + ',' + get_selected_metabolo())) {
                 selected[origin_index + ',' + get_selected_metabolo()] = true;
@@ -223,7 +222,6 @@
             }
             option = get_option(two_dimen_data, selected, get_selected_metabolo());
             myChart.setOption(option);
-
             var nor = $('#IS_Normalisation').prop("checked");
             $.ajax({
                 type: 'POST',
@@ -240,7 +238,7 @@
                     fill_main_table(result);
                     $('#table').DataTable().destroy();
                 },
-                error: function() {alert('can not show result!!!')}
+                error: function() {alert('can not show result!!!');}
             })
         });
 
@@ -291,7 +289,6 @@
             $(this).addClass('selected');
             var dataY = get_selected_metabolo();
             draw_chart(data, dataX, dataY);
-
             var nor = $('#IS_Normalisation').prop("checked");
             $.ajax({
                 type: 'POST',
@@ -530,7 +527,6 @@
                             }
                             }
                         };
-
                 }
             });
             return option;
@@ -648,7 +644,6 @@
         }
 
         function fill_in_table(originData) {
-
             for (var each in originData) {
                 if (each != 'ID' && each != 'IS' && each != 'Concentration' && each != 'Group') {
                     all_metabolo.push(each);
@@ -750,9 +745,7 @@
                 info: false,
                 scrollY: "150px",
                 scrollCollapse: true
-
             })
-
         }
 
         function get_forced_expression(expression) {
@@ -761,9 +754,6 @@
             return tmp.join('+');
         }
     </script>
-
-
-
 
 </body>
 </html>
