@@ -323,7 +323,6 @@
             }
         };
 
-
         myChart.on('click', function(para) {
             /*
             once the point in the chart is clicked, update the dictionary that store the selected points
@@ -429,10 +428,12 @@
                 'dilution_factor': dilution_factor,
                 'csrfmiddlewaretoken': '{{ csrf_token }}'
             };
-
+            /*
             for (var each in res) {
                 console.log(res[each]);
             }
+            */
+            alert(JSON.stringify(res));
         });
 
         $('#dataY tbody').on('click', 'tr', function() {
