@@ -120,7 +120,75 @@
                     {% endif %}
 
                     {% if visualization %}
+
+                        <div id="myModal" class="modal">
+
+                          <div class="modal-content">
+                            <span class="close">&times;</span>
+                            <form>
+                                <div class="form-group">
+                                    <label for="IS_nor">do you need IS Normalisation?</label>
+                                    <select id="IS_nor" class="custom-select">
+                                        <option selected value="yes">yes</option>
+                                        <option value="no">no</option>
+                                    </select>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="rea">do you need Reagent Blank Subtraction?</label>
+                                    <select id="rea" class="custom-select">
+                                        <option selected value="yes">yes</option>
+                                        <option value="no">no</option>
+                                    </select>
+                                </div>
+
+                              <div class="form-group row">
+                                  <label for="dilution" class="offset-5 col-form-label">Dilution Factor </label>
+                                  <div class="col-sm-2">
+                                    <input type="text" class="form-control" id="dilution" placeholder="10" onkeyup="value=value.replace(/[^\d]/g,'')">
+                                  </div>
+                              </div>
+
+                              <div class="form-group">
+                                  <input type="button" id="show_result" value="show result" class="btn btn-outline-danger">
+                              </div>
+                            </form>
+                          </div>
+
+                        </div>
+
                         <div class="container">
+
+                            <form>
+                                <div class="form-row offset-4">
+                                    <div class="form-group">
+                                        <label for="regression_method">Type</label>
+                                        <select id="regression_method" class="custom-select-sm">
+                                              <option selected value="linear">linear</option>
+                                              <option value="quadratic">quad</option>
+                                        </select>
+                                    </div>
+
+                                    <div class="form-group offset-1">
+                                        <label for="regression_origin">Origin</label>
+                                        <select id="regression_origin" class="custom-select-sm">
+                                                <option selected value="default">default</option>
+                                                <option value="forced">forced</option>
+                                        </select>
+                                    </div>
+
+                                    <div class="form-group offset-1">
+                                        <label for="regression_weight">Weight</label>
+                                        <select id="regression_weight" class="custom-select-sm">
+                                                <option selected value="None">none</option>
+                                                <option value="1/x">1/x</option>
+                                                <option value="1/x^2">1/x^2</option>
+                                                <option value="1/y">1/y</option>
+                                                <option value="1/y^2">1/y^2</option>
+                                            </select>
+                                    </div>
+                                </div>
+                            </form>
 
                             <div class="row" class="col-md-12">
 
@@ -137,7 +205,10 @@
 
                                             </tbody>
                                         </table>
-                                        <input type="button" id="show_result" value="show result" class="btn btn-outline-danger">
+
+                                        <!--<input type="button" id="show_result" value="show result" class="btn btn-outline-danger">-->
+
+                                        <input type="button" id="confirm" value="confirm" class="btn btn-outline-danger">
                                     </div>
                                 </div>
 
@@ -145,22 +216,45 @@
 
                                 <div id="control_panel" class="col-md-2">
 
+                                        <table id="IS_select" class="row-border" cellspacing="0">
+                                            <thead>
+                                                <tr>
+                                                    <th>IS_normalisation</th>
+                                                </tr>
+                                            </thead>
+
+                                            <tbody id="IS_method">
+                                                <tr id="no_method" class="selected" style="background-color: rgba(255,255,255,0.8)">
+                                                    <td>None</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                        <!--
                                         <div class="form-group">
-                                            <input type="checkbox" class="filled-in" value="" id="IS_Normalisation">
-                                            <label class="checkbox_word" for="IS_Normalisation">IS Nor</label>
+                                            <input type="checkbox-inline" class="filled-in" value="" id="IS_Normalisation">
+                                            <label class="checkbox_word" for="IS_Normalisation">IS</label>
                                         </div>
 
                                         <div class="form-group">
-                                            <input type="checkbox" class="filled-in" value="" id="Reagent_Blank_Subtraction">
+                                            <input type="checkbox-inline" class="filled-in" value="" id="Reagent_Blank_Subtraction">
                                             <label class="checkbox_word" for="Reagent_Blank_Subtraction">RBS</label>
                                         </div>
+                                        -->
+
+                                        <input type="button" id="assign" value="assign" class="btn btn-outline-success">
+                                        <input type="button" id="assign_all" value="assign all" class="btn btn-outline-warning">
+                                        <input type="button" id="cancel_all" value="cancel all" class="btn btn-outline-danger">
+
+                                        <!--
 
                                         <div class="input-group mb-3">
                                             <select id="regression_method" class="custom-select">
                                               <option selected value="linear">linear</option>
                                               <option value="quadratic">quadratic</option>
                                             </select>
+                                        </div>
 
+                                        <div class="input-group mb-3">
                                             <select id="regression_origin" class="custom-select">
                                                 <option selected value="default">default</option>
                                                 <option value="forced">forced</option>
@@ -176,6 +270,8 @@
                                                 <option value="1/y^2">1/y^2</option>
                                             </select>
                                         </div>
+
+                                        -->
 
                                 </div>
 
@@ -200,13 +296,34 @@
     <script type="text/javascript">
         var myChart = echarts.init(document.getElementById('chart'), '', {devicePixelRatio: 2});
         var selected = {};
-        var checkboxes = {};
+        //var checkboxes = {};
         var two_dimen_data = [];
         var option;
         var data; //copied originData
         var offset;
         var all_metabolo = [];
         var table;
+        var IS_select = {};
+        var IS_select_table;
+        var modal = document.getElementById('myModal');
+        var btn = document.getElementById("confirm");
+        var span = document.querySelector('.close');
+
+        btn.onclick = function() {
+            modal.style.display = "block";
+        };
+
+        span.onclick = function() {
+            modal.style.display = "none";
+        };
+
+        window.onclick = function(event) {
+            if (event.target == modal) {
+                modal.style.display = "none";
+            }
+        };
+
+
         myChart.on('click', function(para) {
             /*
             once the point in the chart is clicked, update the dictionary that store the selected points
@@ -222,7 +339,7 @@
             }
             option = get_option(two_dimen_data, selected, get_selected_metabolo());
             myChart.setOption(option);
-            var nor = $('#IS_Normalisation').prop("checked");
+            //var nor = $('#IS_Normalisation').prop("checked");
             $.ajax({
                 type: 'POST',
                 async: true,
@@ -232,7 +349,8 @@
                 data: {'selected': JSON.stringify(selected),
                         'input_json_pk': {{ input_json_pk }},
                         'offset': offset.toString(),
-                        'is_nor': nor.toString(),
+                        //'is_nor': nor.toString(),
+                        'is_nor': 'true',
                         'csrfmiddlewaretoken': '{{ csrf_token }}'},
                 success: function(result) {
                     fill_main_table(result);
@@ -244,7 +362,7 @@
 
         $('#IS_Normalisation').on('click', function() {
 
-            checkboxes = update_checkboxes();
+            var checkboxes = update_checkboxes();
             var new_data = originData_to_checkboxData(data, checkboxes);
             var dataY = get_selected_metabolo();
             draw_chart(new_data, 'Concentration', dataY);
@@ -257,8 +375,10 @@
             draw_chart(new_data, 'Concentration', dataY);
         });
 
+
         $('#show_result').on('click', function() {
-            var nor = $('#IS_Normalisation').prop("checked");
+            //var nor = $('#IS_Normalisation').prop("checked");
+            /*
             $.ajax({
                 type: 'POST',
                 async: true,
@@ -268,7 +388,8 @@
                 data: {'selected': JSON.stringify(selected),
                         'input_json_pk': {{ input_json_pk }},
                         'offset': offset.toString(),
-                        'is_nor': nor.toString(),
+                        //'is_nor': nor.toString(),
+                        'is_nor': 'true',
                         'csrfmiddlewaretoken': '{{ csrf_token }}'},
                 success: function(result) {
                     window.sessionStorage.setItem("result_data", JSON.stringify(result));
@@ -280,6 +401,38 @@
                 },
                 error: function() {alert('can not show result!!!')}
             })
+            */
+            var IS_nor;
+            var rea;
+            var dilution_factor;
+            if ($('#IS_nor').val() == 'yes') {IS_nor = IS_select;}
+            else {IS_nor = {};}
+
+            if ($('#rea').val() == 'yes') {rea = true;}
+            else {rea = false;}
+            //var tmp = $('#dilution').value;
+
+            var tmp = $('#dilution').val();
+
+            if ($('#dilution').val() == "") {dilution_factor = 10;}
+            else {dilution_factor = $('#dilution').val();}
+
+
+            var res = {
+                'selected': JSON.stringify(selected),
+                'input_json_pk': {{ input_json_pk }},
+                'offset': offset.toString(),
+                //'is_nor': nor.toString(),
+                'is_nor': 'true',
+                'IS_method': IS_nor,
+                'rea': rea,
+                'dilution_factor': dilution_factor,
+                'csrfmiddlewaretoken': '{{ csrf_token }}'
+            };
+
+            for (var each in res) {
+                console.log(res[each]);
+            }
         });
 
         $('#dataY tbody').on('click', 'tr', function() {
@@ -288,8 +441,16 @@
             table.$('tr.selected').removeClass('selected');
             $(this).addClass('selected');
             var dataY = get_selected_metabolo();
-            draw_chart(data, dataX, dataY);
-            var nor = $('#IS_Normalisation').prop("checked");
+            var IS_method = get_selected_IS_method();
+            draw_chart(data, dataX, dataY, IS_method);
+            //var nor = $('#IS_Normalisation').prop("checked");
+            if (!IS_select.hasOwnProperty(dataY) || IS_select[dataY] == 'None') {
+                $('#no_method').click();
+            }
+            else {
+                var tmp = '#' + IS_select[dataY];
+                $(tmp).click();
+            }
             $.ajax({
                 type: 'POST',
                 async: true,
@@ -299,7 +460,8 @@
                 data: {'selected': JSON.stringify(selected),
                         'input_json_pk': {{ input_json_pk }},
                         'offset': offset.toString(),
-                        'is_nor': nor.toString(),
+                        //'is_nor': nor.toString(),
+                        'is_nor': 'true',
                         'csrfmiddlewaretoken': '{{ csrf_token }}'},
                 success: function(result) {
                     $('#table').DataTable().destroy();
@@ -307,6 +469,16 @@
                 },
                 error: function() {alert('can not show result!!!')}
             })
+
+        });
+
+        $('#IS_select tbody').on('click', 'tr', function() {
+            IS_select_table.$('tr.selected').removeClass('selected');
+            $(this).addClass('selected');
+
+            var dataY = get_selected_metabolo();
+            var IS_method = get_selected_IS_method();
+            draw_chart(data, 'Concentration', dataY, IS_method);
 
         });
 
@@ -326,6 +498,25 @@
             myChart.setOption(option);
         });
 
+        $('#assign').on('click', function() {
+           var selected_metabolite = get_selected_metabolo();
+           var selected_IS_method = get_selected_IS_method();
+           IS_select[selected_metabolite] = selected_IS_method;
+
+        });
+
+        $('#assign_all').on('click', function() {
+            IS_select = {};
+            var selected_IS_method = get_selected_IS_method();
+            for (var i = 0; i < all_metabolo.length; i++) {
+                IS_select[all_metabolo[i]] = selected_IS_method;
+            }
+        });
+
+        $('#cancel_all').on('click', function() {
+           IS_select = {};
+        });
+
         $(function () {
             if ('{{ try }}' == 'False'){
                 $.ajax({
@@ -339,13 +530,24 @@
                 success: function(originData) {
                     data = originData;
                     fill_in_table(originData);
-                    table = $('#dataY').DataTable({"scrollY": "200px",
+                    fill_IS_select_table(originData);
+                    table = $('#dataY').DataTable({"scrollY": "150px",
                                             "scrollCollapse": true,
                                             "paging": false,
                                             "searching": false,
                                             "info": false,
                                             "select": true});
-                    $('#dataY tbody tr:eq(0)').click()
+
+                    IS_select_table = $('#IS_select').DataTable({"scrollY": "150px",
+                                            "scrollCollapse": true,
+                                            "paging": false,
+                                            "searching": false,
+                                            "info": false,
+                                            "order": [],
+                                            "select": true});
+
+                    $('#dataY tbody tr:eq(0)').click();
+                    $('#IS_select tbody tr:eq(0)').click();
                     },
                     error: function() {
                         alert('error!')
@@ -363,13 +565,23 @@
                    success: function(originData) {
                       data = originData;
                       fill_in_table(originData);
-                      table = $('#dataY').DataTable({"scrollY": "200px",
+                      fill_IS_select_table(originData);
+                      table = $('#dataY').DataTable({"scrollY": "150px",
                                             "scrollCollapse": true,
                                             "paging": false,
                                             "searching": false,
                                             "info": false,
                                             "select": true});
-                      $('#dataY tbody tr:eq(0)').click()
+
+                      IS_select_table = $('#IS_select').DataTable({"scrollY": "150px",
+                                            "scrollCollapse": true,
+                                            "paging": false,
+                                            "searching": false,
+                                            "info": false,
+                                            "order": [],
+                                            "select": true});
+                      $('#dataY tbody tr:eq(0)').click();
+                      $('#IS_select tbody tr:eq(0)').click();
                    },
                     error: function() {
                         alert('error!')
@@ -399,7 +611,7 @@
             var keep = [];
             var ignored = [];
             var res = [];
-            for (var i = 0; i < two_dimen_data.length; i++) {
+            for (var i = 0; i < get_length(two_dimen_data); i++) {
                 if (!selected.hasOwnProperty(i.toString() + ',' + dataY) || !selected[i.toString() + ',' + dataY]) {
                     keep.push(two_dimen_data[i]);
                 }
@@ -532,24 +744,44 @@
             return option;
         }
 
-        function draw_chart(originData, dataX, dataY) {
+        function draw_chart(originData, dataX, dataY, IS_method) {
             myChart.showLoading();
             var hData = originData[dataX];
             var vData = originData[dataY];
+
             var row_num = 0;
             two_dimen_data = [];
-            for (var i = 0; i < get_length(originData[dataX]); i++) {
-                if (originData['Group'][i] == 'S') {
-                    two_dimen_data.push([hData[i], vData[i]]);
+            if (IS_method == 'None') {
+                for (var i = 0; i < get_length(originData[dataX]); i++) {
+                    if (originData['Group'][i] == 'S') {
+                        two_dimen_data.push([hData[i], vData[i]]);
+                    }
+                }
+
+                for (var j = 0; j < get_length(originData[dataX]); j++) {
+                    if (originData['Group'][j] == 'S') {
+                        offset = row_num;
+                        break;
+                    }
+                    row_num += 1;
                 }
             }
 
-            for (var j = 0; j < get_length(originData[dataX]); j++) {
-                if (originData['Group'][j] == 'S') {
-                    offset = row_num;
-                    break;
+            else {
+                var ISData = originData[IS_method];
+                for (var i = 0; i < get_length(originData[dataX]); i++) {
+                    if (originData['Group'][i] == 'S') {
+                        two_dimen_data.push([hData[i], vData[i] / ISData[i]]);
+                    }
                 }
-                row_num += 1;
+
+                for (var j = 0; j < get_length(originData[dataX]); j++) {
+                    if (originData['Group'][j] == 'S') {
+                        offset = row_num;
+                        break;
+                    }
+                    row_num += 1;
+                }
             }
             option = get_option(two_dimen_data, selected, dataY);
             myChart.hideLoading();
@@ -570,9 +802,9 @@
             return checkboxes;
         }
 
-        function originData_to_is_nor(originData) {
+        function originData_to_is_nor(originData, method) {
             var data_copy = jQuery.extend(true, {}, originData);
-            var IS_data = data_copy['IS'];
+            var IS_data = data_copy[method];
             for (var i = 0; i < IS_data.length; i++) {
                 if (data_copy['Group'][i] == 'S'){
                     data_copy[get_selected_metabolo()][i] /= IS_data[i];
@@ -645,7 +877,7 @@
 
         function fill_in_table(originData) {
             for (var each in originData) {
-                if (each != 'ID' && each != 'IS' && each != 'Concentration' && each != 'Group') {
+                if (each != 'id' && each != 'IS' && each != 'Concentration' && each != 'Group' && !start_with(each, 'IS')) {
                     all_metabolo.push(each);
                     $('#metabolo').append("<tr id=" + each + "></tr>");
                     var eachid = '#' + each;
@@ -657,6 +889,11 @@
 
         function get_selected_metabolo() {
             return table.rows('.selected').data()[0][0];
+        }
+
+        function get_selected_IS_method() {
+            //var res = IS_select_table.rows('.selected');
+            return IS_select_table.rows('.selected').data()[0][0];
         }
 
         function get_forced_points(regression_points, expression) {
@@ -713,7 +950,7 @@
             var data_set = [];
             for (var i = 0; i < cur_csv['Concentration'].length; i++) {
                 if (cur_csv['Group'][i] == 'S') {
-                    id.push(cur_csv['ID'][i]);
+                    id.push(cur_csv['id'][i]);
                     concentration.push(cur_csv['Concentration'][i]);
                     resp.push(cur_csv[get_selected_metabolo()][i].toFixed(2));
                 }
@@ -735,7 +972,7 @@
                 columns: [
                     { title: "ID" },
                     { title: "Concentration" },
-                    { title: "Response" },
+                    { title: "Calculated Concentration" },
                     { title: "Accuracy" }
                 ],
                 destroy: true,
@@ -743,7 +980,7 @@
                 searching: false,
                 paging: false,
                 info: false,
-                scrollY: "150px",
+                scrollY: "100px",
                 scrollCollapse: true
             })
         }
@@ -752,6 +989,31 @@
             var tmp = expression.split('+');
             tmp.pop();
             return tmp.join('+');
+        }
+
+        function start_with(input_string, search_string) {
+            var index = input_string.indexOf(search_string);
+            if (index == 0) {
+                return true;
+            }
+            else {
+                return false;
+            }
+        }
+
+        function fill_IS_select_table(originData) {
+            var count = 0;
+            for (var each in originData) {
+                if (start_with(each, 'IS')) {
+                    //IS_select[each] = originData[each];
+
+                    $('#IS_method').append("<tr id=" + each + "></tr>");
+                    var eachid = '#' + each;
+                    $(eachid).attr("style", "background-color: rgba(255,255,255,0.8)");
+                    $(eachid).append("<td>" + each + "</td>");
+                    count += 1;
+                }
+            }
         }
     </script>
 

@@ -1,4 +1,4 @@
-ID,Concentration,Group,IS,Acetate  ,Propionate  ,Isobutyrate  ,Butyrate  
+id,Concentration,Group,IS,Acetate  ,Propionate  ,Isobutyrate  ,Butyrate
 AA-10-29_828-28177,0,Sample,759346,6882,6923,4183,5372
 AA-11-90_828-28178,0,Sample,715152,9438,6029,3701,3955
 AA-1-20_828-28168,0,Sample,757898,4002,2912,2814,4407

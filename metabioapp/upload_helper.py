@@ -25,7 +25,7 @@ def valid_file(file_path):
         #num_R = 0
         all_data = pd.read_csv(file_path, header=None).as_matrix()
         head = all_data[0]
-        if head[0].strip() != 'ID' or head[1].strip() != 'Concentration' or head[2].strip() != 'Group' or head[3].strip() != 'IS':
+        if head[0].strip() != 'id' or head[1].strip() != 'Concentration' or head[2].strip() != 'Group' or head[3].strip() != 'IS':
             return False
         for i in range(1, len(all_data)):
             if is_number(all_data[i][0]) or not is_number(all_data[i][1]) or is_number(all_data[i][2]) or not is_number(all_data[i][3]):

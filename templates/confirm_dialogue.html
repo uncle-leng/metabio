@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="stylesheet" href="{% static 'css/bootstrap.min.css'%} ">
+    <link rel="stylesheet" href="{% static 'css/bootstrap-grid.min.css' %}">
+    <link href="https://fonts.googleapis.com/css?family=PT+Serif" rel="stylesheet">
+    <meta charset="UTF-8">
+    <script type="text/javascript" src="../static/js/jquery-3.2.1.js"></script>
+    <script type="text/javascript" src="../static/js/bootstrap.min.js"></script>
+    <title>confirm</title>
+</head>
+<body>
+
+    <form>
+        <div class="form-group">
+            <label for="IS_nor">do you need IS Normalisation?</label>
+            <select id="IS_nor" class="custom-select">
+                <option selected value="yes">yes</option>
+                <option value="no">no</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="Rea">do you need Reagent Blank Subtraction?</label>
+            <select id="Rea" class="custom-select">
+                <option selected value="yes">yes</option>
+                <option value="no">no</option>
+            </select>
+        </div>
+
+      <div class="form-group">
+          <label for="dilution">Dilution Factor</label>
+          <input type="text" class="form-control" id="dilution" placeholder="Dilution">
+      </div>
+    </form>
+
+</body>
+</html>
