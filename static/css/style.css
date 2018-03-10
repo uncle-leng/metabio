@@ -61,7 +61,7 @@ table {
 html, body {
   width: 100%;
   height: 100%;
-  overflow: hidden !important;
+  overflow: auto
 }
 
 body {
@@ -69,7 +69,7 @@ body {
   font-family: 'Montserrat', sans-serif;
   color: #fff;
   line-height: 1.3;
-  overflow: hidden !important;
+  overflow: auto;
   -webkit-font-smoothing: antialiased;
 }
 
@@ -77,8 +77,9 @@ body {
 #particles {
   width: 100%;
   height: 100%;
-  overflow: hidden !important;
+  overflow: hidden;
   opacity: 0.9;
+
 }
 
 .intro {

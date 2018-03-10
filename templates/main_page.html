@@ -22,13 +22,14 @@
 <body style="font-family: 'PT Serif', serif">
 
 
-    <nav class="navbar fixed-top navbar-expand-lg navbar-light bg-trans navbar-static-top" id="main_page_nav">
-        <img src="{% static 'img/main_icon.png'%}">
+    <nav class="navbar fixed-top navbar-expand-lg navbar-light bg-lightgray navbar-static-top" id="main_page_nav">
+
 
         <a class="navbar-brand" href="#">Web based concentration calculation tool</a>
 
          {% if home %}
-            <nav class="navbar">
+
+            <nav class="navbar navbar-dark">
                 <a class="nav-link active" href="">Home</a>
                 <a class="nav-link disabled" href="#">Upload</a>
                 <a class="nav-link disabled" href="#">Visualization</a>
@@ -53,7 +54,7 @@
 
     </nav>
 
-    <div id="particles">
+    <div id="particles"> </div>
         <div class="intro container-fluid">
             <div class="row-fluid">
                 <div class="right" style="color: #1b1e21">
@@ -157,39 +158,7 @@
 
                         </div>
 
-                        <div class="container">
-
-                            <form>
-                                <div class="form-row offset-4">
-                                    <div class="form-group">
-                                        <label for="regression_method">Type</label>
-                                        <select id="regression_method" class="custom-select-sm">
-                                              <option selected value="linear">linear</option>
-                                              <option value="quadratic">quad</option>
-                                        </select>
-                                    </div>
-
-                                    <div class="form-group offset-1">
-                                        <label for="regression_origin">Origin</label>
-                                        <select id="regression_origin" class="custom-select-sm">
-                                                <option selected value="default">default</option>
-                                                <option value="forced">forced</option>
-                                        </select>
-                                    </div>
-
-                                    <div class="form-group offset-1">
-                                        <label for="regression_weight">Weight</label>
-                                        <select id="regression_weight" class="custom-select-sm">
-                                                <option selected value="None">none</option>
-                                                <option value="1/x">1/x</option>
-                                                <option value="1/x^2">1/x^2</option>
-                                                <option value="1/y">1/y</option>
-                                                <option value="1/y^2">1/y^2</option>
-                                            </select>
-                                    </div>
-                                </div>
-                            </form>
-
+                        <div class="container" style="margin-left: 0; margin-right: 0">
                             <div class="row" class="col-md-12">
 
                                 <div class="col-md-2">
@@ -197,7 +166,7 @@
                                         <table id="dataY" class="row-border" cellspacing="0">
                                             <thead>
                                                 <tr>
-                                                    <th>Metabolomic</th>
+                                                    <th>Metabolites</th>
                                                 </tr>
                                             </thead>
 
@@ -212,19 +181,17 @@
                                     </div>
                                 </div>
 
-                                <div id="chart" class="col-md-8"></div>
-
                                 <div id="control_panel" class="col-md-2">
 
                                         <table id="IS_select" class="row-border" cellspacing="0">
                                             <thead>
                                                 <tr>
-                                                    <th>IS_normalisation</th>
+                                                    <th>Internal Standards</th>
                                                 </tr>
                                             </thead>
 
                                             <tbody id="IS_method">
-                                                <tr id="no_method" class="selected" style="background-color: rgba(255,255,255,0.8)">
+                                                <tr id="no_method" class="selected">
                                                     <td>None</td>
                                                 </tr>
                                             </tbody>
@@ -242,8 +209,8 @@
                                         -->
 
                                         <input type="button" id="assign" value="assign" class="btn btn-outline-success">
-                                        <input type="button" id="assign_all" value="assign all" class="btn btn-outline-warning">
-                                        <input type="button" id="cancel_all" value="cancel all" class="btn btn-outline-danger">
+                                        <input type="button" id="assign_all" value="assign all" class="btn btn-outline-warning" style="margin-top: 20px">
+                                        <input type="button" id="cancel_all" value="cancel all" class="btn btn-outline-danger" style="margin-top: 20px">
 
                                         <!--
 
@@ -275,20 +242,68 @@
 
                                 </div>
 
+                                <div class="col-md-7">
+                                    <div id="chart"></div>
+                                    <div>
+                                        <table id="main_table" class="row-border" width="100%"></table>
+                                    </div>
+
+                                </div>
+
+                               <div class="col-md-1">
+
+                                        <label for="regression_method" style="margin-top: 20px">Type</label>
+                                        <select id="regression_method" class="custom-select-sm">
+                                              <option selected value="linear">linear</option>
+                                              <option value="quadratic">quad</option>
+                                        </select>
+
+
+
+                                        <label for="regression_origin" style="margin-top: 20px">Origin</label>
+                                        <select id="regression_origin" class="custom-select-sm">
+                                                <option selected value="default">default</option>
+                                                <option value="forced">forced</option>
+                                        </select>
+
+
+                                        <label for="regression_weight" style="margin-top: 20px">Weight</label>
+                                        <select id="regression_weight" class="custom-select-sm">
+                                            <option selected value="None">none</option>
+                                            <option value="1/x">1/x</option>
+                                            <option value="1/x^2">1/x^2</option>
+                                            <option value="1/y">1/y</option>
+                                            <option value="1/y^2">1/y^2</option>
+                                        </select>
+
+                                        <!--<input type="checkbox" class="form-check-input" id="Reagent_Blank_Subtraction" style="margin-top: 40px">
+                                        <label class="form-check-label" for="Reagent_Blank_Subtraction">RBS</label>-->
+
+                                        <div class="checkbox">
+                                          <label>
+                                            <input type="checkbox" id="Reagent_Blank_Subtraction" style="margin-top: 40px">
+                                            <span class="checkbox-icon-wrapper">
+                                              <span class="checkbox-icon glyphicon glyphicon-ok"></span>
+                                            </span>
+                                            RBS
+                                          </label>
+                                        </div>
+
+
+
+
                             </div>
 
-                            <div class="row" class="col-md-12">
-                                <table id="main_table" class="row-border" width="100%"></table>
-                            </div>
+
                         </div>
                     {% endif %}
                 </div>
                 </div>
             </div>
         </div>
-    </div>
 
-    <nav class="navbar fixed-bottom navbar-light bg-trans">
+
+    <nav class="navbar fixed-bottom navbar-light bg-lightgray bg-trans">
         <a class="navbar-brand" href="#">Contact: Dr. Saravanan Dayalan, sdayalan@unimelb.edu.au</a>
     </nav>
 
@@ -296,7 +311,7 @@
     <script type="text/javascript">
         var myChart = echarts.init(document.getElementById('chart'), '', {devicePixelRatio: 2});
         var selected = {};
-        //var checkboxes = {};
+        var checkboxes = {};
         var two_dimen_data = [];
         var option;
         var data; //copied originData
@@ -368,10 +383,10 @@
         });
 
         $('#Reagent_Blank_Subtraction').on('click', function() {
-            checkboxes = update_checkboxes();
-            var new_data = originData_to_checkboxData(data, checkboxes);
+            //checkboxes = update_checkboxes();
+            //var new_data = originData_to_checkboxData(data, checkboxes);
             var dataY = get_selected_metabolo();
-            draw_chart(new_data, 'Concentration', dataY);
+            draw_chart(data, 'Concentration', dataY);
         });
 
 
@@ -443,7 +458,7 @@
             $(this).addClass('selected');
             var dataY = get_selected_metabolo();
             var IS_method = get_selected_IS_method();
-            draw_chart(data, dataX, dataY, IS_method);
+            draw_chart(data, dataX, dataY);
             //var nor = $('#IS_Normalisation').prop("checked");
             if (!IS_select.hasOwnProperty(dataY) || IS_select[dataY] == 'None') {
                 $('#no_method').click();
@@ -479,7 +494,7 @@
 
             var dataY = get_selected_metabolo();
             var IS_method = get_selected_IS_method();
-            draw_chart(data, 'Concentration', dataY, IS_method);
+            draw_chart(data, 'Concentration', dataY);
 
         });
 
@@ -503,6 +518,7 @@
            var selected_metabolite = get_selected_metabolo();
            var selected_IS_method = get_selected_IS_method();
            IS_select[selected_metabolite] = selected_IS_method;
+           alert('assign ' + get_selected_metabolo() + ' to ' + get_selected_IS_method());
 
         });
 
@@ -512,10 +528,12 @@
             for (var i = 0; i < all_metabolo.length; i++) {
                 IS_select[all_metabolo[i]] = selected_IS_method;
             }
+            alert('assign all metabolites to ' + get_selected_IS_method());
         });
 
         $('#cancel_all').on('click', function() {
            IS_select = {};
+           alert('cancel all internal standard');
         });
 
         $(function () {
@@ -532,14 +550,14 @@
                     data = originData;
                     fill_in_table(originData);
                     fill_IS_select_table(originData);
-                    table = $('#dataY').DataTable({"scrollY": "150px",
+                    table = $('#dataY').DataTable({"scrollY": "300px",
                                             "scrollCollapse": true,
                                             "paging": false,
                                             "searching": false,
                                             "info": false,
                                             "select": true});
 
-                    IS_select_table = $('#IS_select').DataTable({"scrollY": "150px",
+                    IS_select_table = $('#IS_select').DataTable({"scrollY": "300px",
                                             "scrollCollapse": true,
                                             "paging": false,
                                             "searching": false,
@@ -567,14 +585,14 @@
                       data = originData;
                       fill_in_table(originData);
                       fill_IS_select_table(originData);
-                      table = $('#dataY').DataTable({"scrollY": "150px",
+                      table = $('#dataY').DataTable({"scrollY": "300px",
                                             "scrollCollapse": true,
                                             "paging": false,
                                             "searching": false,
                                             "info": false,
                                             "select": true});
 
-                      IS_select_table = $('#IS_select').DataTable({"scrollY": "150px",
+                      IS_select_table = $('#IS_select').DataTable({"scrollY": "300px",
                                             "scrollCollapse": true,
                                             "paging": false,
                                             "searching": false,
@@ -745,13 +763,30 @@
             return option;
         }
 
-        function draw_chart(originData, dataX, dataY, IS_method) {
+        function draw_chart(originData, dataX, dataY) {
             myChart.showLoading();
-            var hData = originData[dataX];
-            var vData = originData[dataY];
+            var data_copy = jQuery.extend(true, {}, originData);
+            checkboxes = update_checkboxes();
+            data_copy = originData_to_checkboxData(data_copy, checkboxes);
+            var hData = data_copy[dataX];
+            var vData = data_copy[dataY];
 
             var row_num = 0;
             two_dimen_data = [];
+            for (var i = 0; i < get_length(data_copy[dataX]); i++) {
+                if (originData['Group'][i] == 'S') {
+                        two_dimen_data.push([hData[i], vData[i]]);
+                }
+            }
+            for (var j = 0; j < get_length(data_copy[dataX]); j++) {
+                    if (originData['Group'][j] == 'S') {
+                        offset = row_num;
+                        break;
+                    }
+                    row_num += 1;
+            }
+
+            /*
             if (IS_method == 'None') {
                 for (var i = 0; i < get_length(originData[dataX]); i++) {
                     if (originData['Group'][i] == 'S') {
@@ -784,6 +819,7 @@
                     row_num += 1;
                 }
             }
+            */
             option = get_option(two_dimen_data, selected, dataY);
             myChart.hideLoading();
             myChart.setOption(option);
@@ -792,10 +828,14 @@
         function update_checkboxes() {
             var none;
             var both;
-            var nor = $('#IS_Normalisation').prop("checked");
+            //var nor = $('#IS_Normalisation').prop("checked");
+            var nor;
+            if (get_selected_IS_method() == 'None') {nor = false;}
+            else {nor = true;}
             var rea = $('#Reagent_Blank_Subtraction').prop("checked");
             if (nor && rea) {both = true;}
             if (!nor && !rea) {none = true;}
+            if ((nor && !rea) || (!nor && rea)) {both = false; none = false;}
             var checkboxes = {'none': none,
                           'nor': nor,
                           'rea': rea,
@@ -805,6 +845,7 @@
 
         function originData_to_is_nor(originData, method) {
             var data_copy = jQuery.extend(true, {}, originData);
+            if (method == 'None') {return data_copy;}
             var IS_data = data_copy[method];
             for (var i = 0; i < IS_data.length; i++) {
                 if (data_copy['Group'][i] == 'S'){
@@ -835,6 +876,9 @@
 
         function originData_to_both(originData) {
             var data_copy = jQuery.extend(true, {}, originData);
+            var tmp = originData_to_rea(data_copy);
+            return originData_to_is_nor(tmp, get_selected_IS_method());
+            /*
             var sum = 0;
             var count = 0;
             for (var i = 0; i < data_copy[get_selected_metabolo()].length; i++) {
@@ -849,13 +893,13 @@
                     data_copy[get_selected_metabolo()][j] -= ave;
                 }
             }
-            var IS_data = data_copy['IS'];
+            var IS_data = data_copy[get_selected_IS_method()];
             for (var k =0; k < IS_data.length; k++) {
                 if (data_copy['Group'][k] == 'S') {
                     data_copy[get_selected_metabolo()][k] /= IS_data[k];
                 }
             }
-            return data_copy;
+            */
         }
 
         function originData_to_checkboxData(originData, checkboxes) {
@@ -866,7 +910,7 @@
                 return originData_to_both(originData);
             }
             else if (checkboxes['nor']) {
-                return originData_to_is_nor(originData);
+                return originData_to_is_nor(originData, get_selected_IS_method());
             }
             else if (checkboxes['rea']) {
                 return originData_to_rea(originData);
@@ -878,11 +922,18 @@
 
         function fill_in_table(originData) {
             for (var each in originData) {
-                if (each != 'id' && each != 'IS' && each != 'Concentration' && each != 'Group' && !start_with(each, 'IS')) {
+                if (each != 'id' &&
+                    each != 'IS' &&
+                    each != 'Concentration' &&
+                    each != 'Group' &&
+                    !start_with(each, 'IS') &&
+                    !start_with(each, 'std') &&
+                    !start_with(each, 'NF')) {
+
                     all_metabolo.push(each);
                     $('#metabolo').append("<tr id=" + each + "></tr>");
                     var eachid = '#' + each;
-                    $(eachid).attr("style", "background-color: rgba(255,255,255,0.8)");
+                    //$(eachid).attr("style", "background-color: rgba(255,255,255,0.8)");
                     $(eachid).append("<td>" + each + "</td>");
                 }
             }
@@ -981,7 +1032,7 @@
                 searching: false,
                 paging: false,
                 info: false,
-                scrollY: "100px",
+                scrollY: "300px",
                 scrollCollapse: true
             })
         }
@@ -1010,7 +1061,7 @@
 
                     $('#IS_method').append("<tr id=" + each + "></tr>");
                     var eachid = '#' + each;
-                    $(eachid).attr("style", "background-color: rgba(255,255,255,0.8)");
+                    //$(eachid).attr("style", "background-color: rgba(255,255,255,0.8)");
                     $(eachid).append("<td>" + each + "</td>");
                     count += 1;
                 }

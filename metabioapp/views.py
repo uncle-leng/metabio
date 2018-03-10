@@ -156,7 +156,7 @@ def upload(request):
                                                               'home': False,
                                                               'upload': True,
                                                               'visualization': False})
-                generate_output('./tmp_input.csv', 'tmp_output.xlsx', False)
+                #generate_output('./tmp_input.csv', 'tmp_output.xlsx', False)
                 transfer_to_inputjson('./tmp_input.csv', './tmp_input_json.json')
                 with open('./tmp_input_json.json', 'rb') as f:
                     inputjsonfile = InputJSON()
@@ -165,6 +165,7 @@ def upload(request):
                     inputjsonfile.save()
                     input_json_pk = inputjsonfile.pk
                     f.close()
+                '''
                 with open('./tmp_output.xlsx', 'rb') as f:
                     downloadfile = DownloadFile()
                     downloadfile.upload_file = uploadfile
@@ -182,6 +183,7 @@ def upload(request):
                 os.remove('./tmp_output.json')
                 os.remove('./tmp_input.csv')
                 os.remove('./tmp_output.xlsx')
+                '''
                 os.remove('./tmp_input_json.json')
             except:
                 return render(request, 'main_page.html', {'form': form,
