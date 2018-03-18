@@ -10,9 +10,9 @@ from .models import UploadFileForm
 import os
 import json
 from .upload_helper import valid_file, transfer_to_json, transfer_to_inputjson, \
-    generate_filtered_input, generate_filtered_output, cal_predict_points, cal_expression
-from .new_conc import generate_output
-
+    generate_filtered_input, generate_filtered_output, cal_predict_points, cal_expression, input_list_to_dic
+#from .new_conc import generate_output
+from .conc import generate_output
 
 
 # Create your views here.
@@ -239,20 +239,38 @@ def show_result(request):
     selected = json.loads(request.POST['selected'])
     input_json_pk = request.POST['input_json_pk']
     offset = request.POST['offset']
-    if request.POST['is_nor'] == 'true':
-        is_nor = True
-    else:
-        is_nor = False
+    options = json.loads(request.POST['user_options'])
     uploadfile_id = InputJSON.objects.get(pk=int(input_json_pk)).upload_file_id
-    uploadfile_path = UploadFile.objects.get(pk=uploadfile_id).upload_file.path
+    upload_file_instance = UploadFile.objects.get(pk=uploadfile_id)
+    uploadfile_path = upload_file_instance.upload_file.path
+    upload_file = upload_file_instance.upload_file
     filtered_json = generate_filtered_input(uploadfile_path, selected, offset)
-    generate_filtered_output(filtered_json, './result_csv.csv')
-    generate_output('./result_csv.csv', './result_xlsx.xlsx', is_nor)
+    input_list = json.loads(filtered_json)
+    input_dic = input_list_to_dic(input_list)
+
+    if os.path.isfile('./result_xlsx.xlsx'):
+        os.remove('./result_xlsx.xlsx')
+    generate_output(input_dic, './result_xlsx.xlsx', options)
+
+
+    with open('./result_xlsx.xlsx', 'rb') as f:
+        result_file_object = DownloadFile()
+        result_file_object.upload_file = upload_file_instance
+        result_file_object.download_file = File(f)
+        result_file_object.save()
+        down_load_pk = result_file_object.pk
+    f.close()
+
+
+    #generate_filtered_output(filtered_json, './result_csv.csv')
+    #generate_output('./result_csv.csv', './result_xlsx.xlsx', is_nor)
+
     transfer_to_json('./result_xlsx.xlsx', './result_json.json')
 
     with open('./result_json.json', 'r') as f:
         response = json.load(f)
     f.close()
+    response['download_pk'] = str(down_load_pk)
     if os.path.isfile('./result_csv.csv'):
         os.remove('./result_csv.csv')
     if os.path.isfile('./result_xlsx.xlsx'):
@@ -277,17 +295,23 @@ def download(request):
     selected = json.loads(request.POST['selected'])
     offset = json.loads(request.POST['offset'])
     input_json_pk = request.POST['input_json_pk']
+    download_pk = request.POST['download_pk']
     if request.POST['is_nor'] == 'true':
         is_nor = True
     else:
         is_nor = False
+    download_file_path = DownloadFile.objects.get(pk=int(download_pk)).download_file.path
+
+    '''
     uploadfile_id = InputJSON.objects.get(pk=int(input_json_pk)).upload_file_id
     uploadfile_path = UploadFile.objects.get(pk=uploadfile_id).upload_file.path
     filtered_json = generate_filtered_input(uploadfile_path, selected, offset)
     generate_filtered_output(filtered_json, './result_csv.csv')
     generate_output('./result_csv.csv', './result_xlsx.xlsx', is_nor)
+    '''
 
-    response = StreamingHttpResponse(file_iterator('./result_xlsx.xlsx'))
+    #response = StreamingHttpResponse(file_iterator('./result_xlsx.xlsx'))
+    response = StreamingHttpResponse(file_iterator(download_file_path))
     response['Content-Type'] = 'application/octet-stream'
     response['Content-Disposition'] = 'attachment;filename="{0}"'.format('./result_xlsx.xlsx')
 
@@ -348,6 +372,9 @@ def weighted_regression(request):
         res['predicted_points'] = cal_predict_points(points, equation.tolist())
         res['expression'] = cal_expression(equation.tolist())
         return HttpResponse(json.dumps(res))
+
+
+
 
 
 

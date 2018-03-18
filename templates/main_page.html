@@ -22,7 +22,7 @@
 <body style="font-family: 'PT Serif', serif">
 
 
-    <nav class="navbar fixed-top navbar-expand-lg navbar-light bg-lightgray navbar-static-top" id="main_page_nav">
+    <nav class="navbar fixed-top navbar-expand-lg navbar-light bg-white navbar-static-top" id="main_page_nav">
 
 
         <a class="navbar-brand" href="#">Web based concentration calculation tool</a>
@@ -138,6 +138,14 @@
                                 <div class="form-group">
                                     <label for="rea">do you need Reagent Blank Subtraction?</label>
                                     <select id="rea" class="custom-select">
+                                        <option selected value="yes">yes</option>
+                                        <option value="no">no</option>
+                                    </select>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="NF">do you need normalising factors?</label>
+                                    <select id="NF" class="custom-select">
                                         <option selected value="yes">yes</option>
                                         <option value="no">no</option>
                                     </select>
@@ -289,10 +297,8 @@
                                           </label>
                                         </div>
 
-
-
-
-                            </div>
+                                        <input type="button" id="confirm_regression" value="confirm_regression" class="btn btn-outline-danger">
+                                </div>
 
 
                         </div>
@@ -303,7 +309,7 @@
         </div>
 
 
-    <nav class="navbar fixed-bottom navbar-light bg-lightgray bg-trans">
+    <nav class="navbar fixed-bottom navbar-light bg-white bg-trans">
         <a class="navbar-brand" href="#">Contact: Dr. Saravanan Dayalan, sdayalan@unimelb.edu.au</a>
     </nav>
 
@@ -317,6 +323,7 @@
         var data; //copied originData
         var offset;
         var all_metabolo = [];
+        var regression_options = {};
         var table;
         var IS_select = {};
         var IS_select_table;
@@ -353,6 +360,17 @@
             }
             option = get_option(two_dimen_data, selected, get_selected_metabolo());
             myChart.setOption(option);
+
+            var user_options = {
+                'IS_method': JSON.stringify(IS_select),
+                //'need_IS': $('#IS_nor').val(),
+                'need_IS': 'yes',
+                //'need_rea': $('#rea').val(),
+                'need_rea': 'yes',
+                'regression_option': JSON.stringify(regression_options),
+                'dilution_factor': '10',
+                'nf': 'yes'
+            };
             //var nor = $('#IS_Normalisation').prop("checked");
             $.ajax({
                 type: 'POST',
@@ -364,7 +382,8 @@
                         'input_json_pk': {{ input_json_pk }},
                         'offset': offset.toString(),
                         //'is_nor': nor.toString(),
-                        'is_nor': 'true',
+                        'user_options': JSON.stringify(user_options),
+                        //'is_nor': 'true',
                         'csrfmiddlewaretoken': '{{ csrf_token }}'},
                 success: function(result) {
                     fill_main_table(result);
@@ -388,7 +407,6 @@
             var dataY = get_selected_metabolo();
             draw_chart(data, 'Concentration', dataY);
         });
-
 
         $('#show_result').on('click', function() {
             //var nor = $('#IS_Normalisation').prop("checked");
@@ -422,51 +440,37 @@
             if ($('#IS_nor').val() == 'yes') {IS_nor = IS_select;}
             else {IS_nor = {};}
 
-            if ($('#rea').val() == 'yes') {rea = true;}
+            if ($('#rea').val() == 'yes') {rea = 'true';}
             else {rea = false;}
             //var tmp = $('#dilution').value;
 
             var tmp = $('#dilution').val();
 
-            if ($('#dilution').val() == "") {dilution_factor = 10;}
+            if ($('#dilution').val() == "") {dilution_factor = '10';}
             else {dilution_factor = $('#dilution').val();}
 
+            var user_options = {
+                'IS_method': JSON.stringify(IS_select),
+                'need_IS': $('#IS_nor').val(),
+                'need_rea': $('#rea').val(),
+                'regression_option': JSON.stringify(regression_options),
+                'dilution_factor': dilution_factor,
+                'nf': $('#NF').val()
+            };
 
-            var res = {
+            var data_to_be_sent = {
                 'selected': JSON.stringify(selected),
                 'input_json_pk': {{ input_json_pk }},
                 'offset': offset.toString(),
+                'user_options': JSON.stringify(user_options),
                 //'is_nor': nor.toString(),
-                'is_nor': 'true',
-                'IS_method': IS_nor,
-                'rea': rea,
-                'dilution_factor': dilution_factor,
+                //'is_nor': 'true',
+                //'IS_method': IS_nor,
+                //'rea': rea,
+                //'dilution_factor': dilution_factor,
                 'csrfmiddlewaretoken': '{{ csrf_token }}'
             };
-            /*
-            for (var each in res) {
-                console.log(res[each]);
-            }
-            */
-            alert(JSON.stringify(res));
-        });
 
-        $('#dataY tbody').on('click', 'tr', function() {
-            two_dimen_data = [];
-            var dataX = 'Concentration';
-            table.$('tr.selected').removeClass('selected');
-            $(this).addClass('selected');
-            var dataY = get_selected_metabolo();
-            var IS_method = get_selected_IS_method();
-            draw_chart(data, dataX, dataY);
-            //var nor = $('#IS_Normalisation').prop("checked");
-            if (!IS_select.hasOwnProperty(dataY) || IS_select[dataY] == 'None') {
-                $('#no_method').click();
-            }
-            else {
-                var tmp = '#' + IS_select[dataY];
-                $(tmp).click();
-            }
             $.ajax({
                 type: 'POST',
                 async: true,
@@ -477,7 +481,63 @@
                         'input_json_pk': {{ input_json_pk }},
                         'offset': offset.toString(),
                         //'is_nor': nor.toString(),
-                        'is_nor': 'true',
+                        //'is_nor': 'true',
+                        'user_options': JSON.stringify(user_options),
+                        'csrfmiddlewaretoken': '{{ csrf_token }}'},
+                success: function(result) {
+                    window.sessionStorage.setItem("result_data", JSON.stringify(result));
+                    window.sessionStorage.setItem('selected', JSON.stringify(selected));
+                    window.sessionStorage.setItem('input_json_pk', {{ input_json_pk }});
+                    window.sessionStorage.setItem('offset', offset.toString());
+                    //window.sessionStorage.setItem('is_nor', nor.toString());
+                    window.location.href = './result_page/';
+                },
+                error: function() {alert('can not show result!!!')}
+            })
+
+            //alert(JSON.stringify(res));
+        });
+
+        $('#dataY tbody').on('click', 'tr', function() {
+            two_dimen_data = [];
+            var dataX = 'Concentration';
+            table.$('tr.selected').removeClass('selected');
+            $(this).addClass('selected');
+            var dataY = get_selected_metabolo();
+            var dilu = $('#dilution').val();
+            draw_chart(data, dataX, dataY);
+            //var nor = $('#IS_Normalisation').prop("checked");
+            if (!IS_select.hasOwnProperty(dataY) || IS_select[dataY] == 'None') {
+                $('#no_method').click();
+            }
+            else {
+                var tmp = '#' + IS_select[dataY];
+                $(tmp).click();
+            }
+            update_main_table();
+            /*
+            var user_options = {
+                'IS_method': JSON.stringify(IS_select),
+                //'need_IS': $('#IS_nor').val(),
+                'need_IS': 'yes',
+                //'need_rea': $('#rea').val(),
+                'need_rea': 'yes',
+                'regression_option': JSON.stringify(regression_options),
+                'dilution_factor': '10',
+                'nf': 'yes'
+            };
+            $.ajax({
+                type: 'POST',
+                async: true,
+                traditional: true,
+                url: '../show_result/',
+                dataType: 'json',
+                data: {'selected': JSON.stringify(selected),
+                        'input_json_pk': {{ input_json_pk }},
+                        'offset': offset.toString(),
+                        'user_options': JSON.stringify(user_options),
+                        //'is_nor': nor.toString(),
+                        //'is_nor': 'true',
                         'csrfmiddlewaretoken': '{{ csrf_token }}'},
                 success: function(result) {
                     $('#table').DataTable().destroy();
@@ -485,15 +545,14 @@
                 },
                 error: function() {alert('can not show result!!!')}
             })
+            */
 
         });
 
         $('#IS_select tbody').on('click', 'tr', function() {
             IS_select_table.$('tr.selected').removeClass('selected');
             $(this).addClass('selected');
-
             var dataY = get_selected_metabolo();
-            var IS_method = get_selected_IS_method();
             draw_chart(data, 'Concentration', dataY);
 
         });
@@ -501,17 +560,19 @@
         $('#regression_method').on('change', function() {
            option = get_option(two_dimen_data, selected, get_selected_metabolo());
            myChart.setOption(option);
-
+           regression_options[get_selected_metabolo()][0] = $(this).val();
         });
 
         $('#regression_origin').on('change', function() {
             option = get_option(two_dimen_data, selected, get_selected_metabolo());
             myChart.setOption(option);
+            regression_options[get_selected_metabolo()][1] = $(this).val();
         });
 
         $('#regression_weight').on('change', function() {
             option = get_option(two_dimen_data, selected, get_selected_metabolo());
             myChart.setOption(option);
+            regression_options[get_selected_metabolo()][2] = $(this).val();
         });
 
         $('#assign').on('click', function() {
@@ -533,7 +594,18 @@
 
         $('#cancel_all').on('click', function() {
            IS_select = {};
+           for (var i = 0; i < all_metabolo.length; i++) {
+                IS_select[all_metabolo[i]] = 'None';
+            }
            alert('cancel all internal standard');
+        });
+
+        $('#confirm_regression').on('click', function() {
+            var method = $('#regression_method').val();
+            var origin = $('#regression_origin').val();
+            var weight = $('#regression_weight').val();
+            regression_options[get_selected_metabolo()] = [method, origin, weight];
+            alert('confirmed regression options to ' + get_selected_metabolo());
         });
 
         $(function () {
@@ -550,6 +622,10 @@
                     data = originData;
                     fill_in_table(originData);
                     fill_IS_select_table(originData);
+                    for (var i = 0; i < all_metabolo.length; i++) {
+                        IS_select[all_metabolo[i]] = 'None';
+                    }
+
                     table = $('#dataY').DataTable({"scrollY": "300px",
                                             "scrollCollapse": true,
                                             "paging": false,
@@ -585,6 +661,9 @@
                       data = originData;
                       fill_in_table(originData);
                       fill_IS_select_table(originData);
+                      for (var i = 0; i < all_metabolo.length; i++) {
+                        IS_select[all_metabolo[i]] = 'None';
+                        }
                       table = $('#dataY').DataTable({"scrollY": "300px",
                                             "scrollCollapse": true,
                                             "paging": false,
@@ -931,6 +1010,7 @@
                     !start_with(each, 'NF')) {
 
                     all_metabolo.push(each);
+                    regression_options[each] = ['linear', 'default', 'none'];
                     $('#metabolo').append("<tr id=" + each + "></tr>");
                     var eachid = '#' + each;
                     //$(eachid).attr("style", "background-color: rgba(255,255,255,0.8)");
@@ -994,7 +1074,7 @@
         }
 
         function fill_main_table(resultData) {
-            var cur_csv = resultData[5];
+            var cur_csv = resultData['Con'];
             var id = [];
             var concentration = [];
             var resp = [];
@@ -1066,6 +1146,44 @@
                     count += 1;
                 }
             }
+        }
+
+        function update_main_table() {
+            var need_IS = $('#IS_nor').val();
+            var need_rea = $('#rea').val();
+            var dilution_factor = $('#dilution').val();
+            if (dilution_factor == "") {dilution_factor = '10';}
+
+
+             var user_options = {
+                'IS_method': JSON.stringify(IS_select),
+                //'need_IS': $('#IS_nor').val(),
+                'need_IS': need_IS,
+                //'need_rea': $('#rea').val(),
+                'need_rea': need_rea,
+                'regression_option': JSON.stringify(regression_options),
+                'dilution_factor': dilution_factor,
+                'nf': 'yes'
+            };
+            $.ajax({
+                type: 'POST',
+                async: true,
+                traditional: true,
+                url: '../show_result/',
+                dataType: 'json',
+                data: {'selected': JSON.stringify(selected),
+                        'input_json_pk': {{ input_json_pk }},
+                        'offset': offset.toString(),
+                        'user_options': JSON.stringify(user_options),
+                        //'is_nor': nor.toString(),
+                        //'is_nor': 'true',
+                        'csrfmiddlewaretoken': '{{ csrf_token }}'},
+                success: function(result) {
+                    $('#table').DataTable().destroy();
+                    fill_main_table(result);
+                },
+                error: function() {alert('can not show result!!!')}
+            })
         }
     </script>
 

@@ -68,15 +68,19 @@ def transfer_to_json(input_path, output_path):
     sh_num = len(book.sheet_names())
     for i in range(sh_num):
         cur_sheet = book.sheet_by_index(i)
-        cur_col_num = cur_sheet.ncols
-        sheet_data = {}
-        heads = []
-        for j in range(cur_col_num):
-            head = cur_sheet.col_values(j)[1].strip()
-            heads.append(head)
-            sheet_data[head] = cur_sheet.col_values(j)[2:]
-        sheet_data['heads'] = heads
-        result[str(i)] = sheet_data
+        title = cur_sheet.name
+        if title.startswith('CV'):
+            continue
+        else:
+            cur_col_num = cur_sheet.ncols
+            sheet_data = {}
+            heads = []
+            for j in range(cur_col_num):
+                head = cur_sheet.col_values(j)[1].strip()
+                heads.append(head)
+                sheet_data[head] = cur_sheet.col_values(j)[2:]
+            sheet_data['heads'] = heads
+            result[title] = sheet_data
 
     with open(output_path, 'w') as f:
         json.dump(result, f)
@@ -156,6 +160,17 @@ def cal_expression(equation):
     elif len(equation) == 2:
         return 'y = ' + str(round(equation[1], 2)) + 'x + ' + str(round(equation[0], 2))
 
+def input_list_to_dic(input_list):
+    res = {}
+    for i in range(0, len(input_list[0])):
+        head = input_list[0][i].strip()
+        res[head] = []
+        for j in range(1, len(input_list)):
+            if input_list[0][i].strip() == 'id' or input_list[0][i].strip() == 'Group':
+                res[head].append(input_list[j][i])
+            else:
+                res[head].append(float(input_list[j][i]))
+    return res
 
 
 

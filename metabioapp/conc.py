@@ -1,336 +1,270 @@
+import json
+from numpy.polynomial import polynomial as poly
+import openpyxl
+from numpy import array, mean, std
 
 
-import csv
-import numpy
-import statistics
-import itertools
-import xlsxwriter
+def is_metabolite(name):
+    if name != 'id' and name != 'Concentration' and name != 'Group' and name != 'std_replicate' and name != 'NF' and not name.startswith('IS'):
+        return True
+    return False
 
-def get_groups(filename):
-    groups = {}
-    with open(filename, 'r') as fp:
-        reader = csv.reader(fp)
-        next(reader)
-        
-        for line in reader:
-            if (line[2] in groups) == False:
-                groups.update({line[2]:0})
-    fp.close()
-    return(groups)
+def normalise_self(is_list):
+    min_val = min(is_list)
+    for i in range(0, len(is_list)):
+        is_list[i] /= min_val
 
-
-def group_count(filename, groups):
-    with open(filename, 'r') as fp:
-        reader = csv.reader(fp)
-        next(reader)
-        
-        for line in reader:
-            for sample in groups:
-                if sample == line[2]:
-                    groups[sample] = groups[sample]+1
-    fp.close()
-    return(groups)
-
-            
-def is_normalise(filename):
-    mat = []
-    with open(filename, 'r') as fp:
-        reader = csv.reader(fp)
-        fline = next(reader)
-        
-        for line in reader:
-            mat.append(line[3:])
-            
-    arr = numpy.array(mat)
-    intarr = arr.astype(numpy.int)
-
-    isnorm = []
-    isnorm = intarr[:,0]/intarr[:,0].min()
-    finalarr = numpy.array(isnorm)
-
-    for i in range(1, len(intarr[0])):
-        val = intarr[:,i]/isnorm
-        finalarr = numpy.vstack((finalarr, val))
-    tr_finalarr = finalarr.transpose()
-    tr_finalarr_list = tr_finalarr.tolist()
-    fp.close()
-
-    with open(filename, 'r') as fp:
-        reader = csv.reader(fp)
-        fline = next(reader)
-        fin_list = []
-        fin_list.append(fline)
-        i = 0
-        for line in reader:
-            fin_list.append(line[:3]+tr_finalarr_list[i])
-            i = i+1
-    fp.close()
-    return(fin_list, tr_finalarr)
-
-
-def subtract_reg(metlist):
-    size = len(metlist) # calculates the number of samples!
-    num_met = len(metlist[0])-3
-    met_count = 3
-    Sub_mat = [[None]*(size-1)]
-    iscol = []
-    Sub_mat = numpy.array(Sub_mat)
-   
-    for j in range(0, num_met): # cycling through metabolites
-        j = j + met_count
-
-        Reg_li = []
-        Reg_avg = 0
-        for i in range(1,size): # cycling through the number of samples
-            if metlist[i][2] == 'R':
-                Reg_li.append(metlist[i][j])
-        Reg_avg = statistics.mean(Reg_li)
-
-        Sub_li = []
-        for i in range(1,size): # cycling through the number of samples
-            sub_val = 0
-            if(metlist[i][j] != 0):
-                sub_val = metlist[i][j] - Reg_avg
-            Sub_li.append(sub_val)
-
-        Sub_li_arr = numpy.array([Sub_li])     
-        Sub_mat = numpy.vstack((Sub_mat, Sub_li_arr))
-        tr_Sub_mat = Sub_mat[1:].transpose()
-        tr_Sub_mat_li = tr_Sub_mat.tolist()
-
-    fin_sub_li = []
-    fin_sub_li.append(metlist[0])
-
-    for l in range(1, len(metlist)):
-        temp = []
-        init_li = []
-        init_li = [metlist[l][0],metlist[l][1], metlist[l][2]]
-        temp.append(init_li + tr_Sub_mat_li[l-1])
-        fin_sub_li.extend(temp)
-
-    return(fin_sub_li)
-
-
-def stats(metlist, groups, workbook, text):
-    worksheet = workbook.add_worksheet()
-    worksheet.write(0, 0, text)
-    worksheet.write(1, 0, "")
-    out_count = 1
-    for group in groups:
-        out_count = out_count + 1
-        op_text = "In group " + group
-        worksheet.write(out_count, 0, op_text)
-        out_count = out_count + 1
-        size = len(metlist)
-        num_met = len(metlist[0])-3
-        sum = 0
-        met_count = 3
-        for j in range(0, num_met): # cycling through metabolites
-            j = j + met_count
-            sum = 0
-            li = []            
-            for i in range(1,size): # cycling through the number of samples in each group
-                if group == metlist[i][2]:
-                    sum = sum + metlist[i][j]
-                    li.append(metlist[i][j])
-            try:
-#                op_text = "CV of" + metlist[0][j] + ": " + str(statistics.stdev(li)/statistics.mean(li)*100)
-                worksheet.write(out_count, 0, metlist[0][j])  
-                worksheet.write(out_count, 1, statistics.stdev(li)/statistics.mean(li)*100)               
-                #print("CV of", metlist[0][j], ": ", statistics.stdev(li)/statistics.mean(li)*100)
-            except ZeroDivisionError:
-                worksheet.write(out_count, 0, metlist[0][j])  
-                worksheet.write(out_count, 1, "NA") 
-                #print("\n Warning: sum = 0 causing a ZeroDivisionError. Therefore skipping calculating stats for this metabolite.")
-                #print(li)
-                #rint("\n")
-            out_count = out_count + 1
-            
-
-
-def linreg(metlist):
-    size = len(metlist)
-    num_met = len(metlist[0])-3
-    sum = 0
-    met_count = 3
-    conc_li = []
-
-    for j in range(0, num_met): # cycling through metabolites
-        j = j + met_count
-        sum = 0
-        spike_li = []
-        auc_li = []        
-        li = []
-        for i in range(1,size): # cycling through the number of samples in each group
-            if metlist[i][2] == 'S':
-                if metlist[i][j] != 0:
-                    spike_li.append(metlist[i][1])
-                    auc_li.append(metlist[i][j])                    
-        spike_li = list(map(float, spike_li))
-        fit = numpy.polyfit(spike_li, auc_li, 1)
-        #print("For ", metlist[0][j], " m = ",fit[0]," c = ",fit[1])
-        conc_li.append((metlist[0][j], fit[0], fit[1]))
-    return(conc_li)
-
-
-def conc_cal(metlist, conc_li):
-    size = len(metlist) # calculates the number of samples!
-    num_met = len(metlist[0])-3
-    met_count = 3
-    Sub_mat = [[None]*(size-1)]
-    iscol = []
-    Sub_mat = numpy.array(Sub_mat)
-   
-    for j in range(0, num_met): # cycling through metabolites
-
-        j = j + met_count
-
-        Sub_li = []
-        for i in range(1,size): # cycling through the number of samples
-            for k in conc_li:
-                m = 0
-                c = 0
-                x = 0
-                y = 0              
-                if k[0] == metlist[0][j]:                    
-                    m = k[1]
-                    c = k[2]
-                    break
-                
-            y = metlist[i][j]
-
-            if(metlist[i][j] != 0):
-                x = (y-c)/m
-            Sub_li.append(x)
-
-        Sub_li_arr = numpy.array([Sub_li])     
-        Sub_mat = numpy.vstack((Sub_mat, Sub_li_arr))
-        tr_Sub_mat = Sub_mat[1:].transpose()
-        tr_Sub_mat_li = tr_Sub_mat.tolist()
-
-    fin_sub_li = []
-    fin_sub_li.append(metlist[0])
-
-    for l in range(1, len(metlist)):
-        temp = []
-        init_li = []
-        init_li = [metlist[l][0],metlist[l][1], metlist[l][2]]
-        temp.append(init_li + tr_Sub_mat_li[l-1])
-        fin_sub_li.extend(temp)
-
-    return(fin_sub_li)
-
-
-def write_rawdata(workbook, filename):
-    worksheet = workbook.add_worksheet()
-    worksheet.write(0, 0, 'Raw Data')
-    with open(filename, 'r') as fp:
-        reader = csv.reader(fp)
-        x = 1
-        y = 0        
-        for line in reader:     
-            for j in range(0, len(line)):   
-                if (x == 1):
-                    worksheet.write(x, y, line[j])
-                else:
-                    if (y == 0 or y == 2):
-                        worksheet.write(x, y, line[j])
-                    else:
-                        worksheet.write_number(x, y, float(line[j]))
-                y = y + 1
-            x = x + 1
-            y = 0
-
-                
-
-def write_data(workbook, reader, text):
-    worksheet = workbook.add_worksheet()
-    worksheet.write(0, 0, text)
-    x = 1
-    y = 0        
-    for line in reader:
-        #print(line)
-        for j in range(0, len(line)):   
-            if (x == 1):
-                worksheet.write(x, y, line[j])
+def cal_equation(y, equation, origin):
+    if origin == 'default':
+        if len(equation) == 2:
+            return (y - equation[0]) / equation[1]
+        if len(equation) == 3:
+            delta = equation[1]**2 - 4*equation[2]*(equation[0] - y)
+            if delta < 0:
+                return 0
+            x1 = (-equation[1] + delta ** (1.0/2)) / 2*equation[2]
+            x2 = (-equation[1] - delta ** (1.0/2)) / 2*equation[2]
+            if x1 > 0:
+                return x1
+            elif x2 > 0:
+                return x2
             else:
-                if (y == 0 or y == 2):
-                    worksheet.write(x, y, line[j])
+                return 0
+    if origin == 'forced':
+        if len(equation) == 2:
+            return y / equation[1]
+        if len(equation) == 3:
+            delta = equation[1]**2 + 4 * equation[3] * y
+            if delta < 0:
+                return 0
+            x1 = (-equation[1] + delta ** (1.0 / 2)) / 2 * equation[2]
+            x2 = (-equation[1] - delta ** (1.0 / 2)) / 2 * equation[2]
+            if x1 > 0:
+                return x1
+            elif x2 > 0:
+                return x2
+            else:
+                return 0
+    return 0
+
+def cal_predict_points(points, equation, origin):
+    res = []
+    '''
+    if origin == 'default':
+        if len(equation) == 3:
+            for each in points:
+                res.append(equation[0] + each*equation[1] + each*each*equation[2])
+            return res
+        elif len(equation) == 2:
+            for each in points:
+                res.append(equation[0] + each*equation[1])
+    if origin == 'forced':
+        if len(equation) == 3:
+            for each in points:
+                res.append(each*equation[1] + each*each*equation[2])
+            return res
+        elif len(equation) == 2:
+            for each in points:
+                res.append(each*equation[1])
+    '''
+    for y in points:
+        res.append(cal_equation(y, equation, origin))
+    return res
+
+def is_normalisation(input_dic, is_method_dic):
+    is_dic = {}
+    # store all IS column in a dic structure:  {'IS1' : [1,2,3,4,6]}
+    for each_col in input_dic:
+        if each_col.startswith('IS'):
+            is_dic[each_col] = input_dic[each_col]
+    # normalise itself
+    for each_list in is_dic.values():
+        normalise_self(each_list)
+    #divide all the metabolite values by the corresponding IS values
+    for each_col in input_dic:
+        if is_metabolite(each_col):
+            if is_method_dic[each_col] == 'None':
+                continue
+            #metabolite_values = input_dic[each_col]
+            is_values = is_dic[is_method_dic[each_col]]
+            for i in range(0, len(input_dic[each_col])):
+                input_dic[each_col][i] /= is_values[i]
+    return input_dic
+
+def reagent_sub(input_dic):
+    for each_col in input_dic:
+        total = 0
+        count = 0
+        if is_metabolite(each_col):
+            for i in range(len(input_dic[each_col])):
+                if input_dic['Group'][i] == 'R':
+                    total += input_dic[each_col][i]
+                    count += 1
+            ave = total / count
+
+            for i in range(len(input_dic[each_col])):
+                input_dic[each_col][i] -= ave
+    return input_dic
+
+def cal_regression(input_dic, regression_option):
+    for each_col in input_dic:
+        if is_metabolite(each_col):
+            method = regression_option[each_col][0]
+            origin = regression_option[each_col][1]
+            weight = regression_option[each_col][2]
+            points = []
+            weights = []
+            dataX = []
+            dataY = []
+            equation = []
+            for i in range(0, len(input_dic[each_col])):
+                weights = []
+                if input_dic['Group'][i] == 'S':
+                    tmp = []
+                    tmp.append(input_dic['Concentration'][i])
+                    tmp.append(input_dic[each_col][i])
+                    #points.append([input_dic['Concentration'][i], input_dic[each_col][i]])
+                    points.append(tmp)
+            for each_point in points:
+                if weight == 'none':
+                    weights.append(1)
+                if weight == '1/x':
+                    if each_point[0] == 0:
+                        weights.append(0)
+                    else:
+                        weights.append(1 / each_point[0])
+                if weight == '1/x^2':
+                    if each_point[0] == 0:
+                        weights.append(0)
+                    else:
+                        weights.append(1 / (each_point[0] ** 2))
+                if weight == '1/y':
+                    if each_point[1] == 0:
+                        weights.append(0)
+                    else:
+                        weights.append(1 / each_point[1])
+                if weight == '1/y^2':
+                    if each_point[1] == 0:
+                        weights.append(0)
+                    else:
+                        weights.append(1 / (each_point[1] ** 2))
+
+                dataX.append(each_point[0])
+                dataY.append(each_point[1])
+            if method == 'quad':
+                equation, stats = poly.polyfit(x=dataX, y=dataY, deg=2, w=weights, full=True)
+            elif method == 'linear':
+                equation, stats = poly.polyfit(x=dataX, y=dataY, deg=1, w=weights, full=True)
+            res = cal_predict_points(input_dic[each_col], equation, origin)
+            for i in range(0, len(res)):
+                input_dic[each_col][i] = res[i]
+    return input_dic
+
+def write_data(input_dic, workbook, sheet_name, text, dilution_factor):
+    #workbook = openpyxl.load_workbook(workbook_path)
+    cur_sheet = workbook.create_sheet(title=sheet_name)
+    cur_sheet.append([text])
+    head = []
+    for col_name in input_dic:
+        head.append(col_name)
+    cur_sheet.append(head)
+    for i in range(0, len(input_dic['id'])):
+        tmp = []
+        for each_col in input_dic:
+            if each_col == 'id' or each_col == 'Group':
+                tmp.append(input_dic[each_col][i])
+            else:
+                tmp.append(input_dic[each_col][i] * dilution_factor)
+        cur_sheet.append(tmp)
+    #workbook.save(workbook_path)
+
+def stats(input_dic, workbook, sheet_name, text):
+    group_index = {}
+    index = 0
+    for group_name in input_dic['Group']:
+        if group_name in group_index:
+            group_index[group_name].append(index)
+        else:
+            group_index[group_name] = [index]
+        index += 1
+
+    #workbook = openpyxl.load_workbook(workbook_path)
+    cur_sheet = workbook.create_sheet(title=sheet_name)
+    cur_sheet.append([text])
+    cur_sheet.append([])
+    for each_group in group_index:
+        cur_sheet.append(['In Group ' + each_group])
+        for each_col in input_dic:
+            if is_metabolite(each_col):
+                tmp = []
+                indexes = group_index[each_group]
+                for index in indexes:
+                    tmp.append(input_dic[each_col][index])
+                tmp_array = array(tmp)
+                if mean(tmp_array) == 0:
+                    cur_sheet.append([each_col, 'NA'])
                 else:
-                    worksheet.write_number(x, y, float(line[j]))
-            y = y + 1
-        x = x + 1
-        y = 0
+                    cur_sheet.append([each_col, str(std(tmp_array) / mean(tmp_array) * 100)])
+
+        cur_sheet.append([])
+    #workbook.save(workbook_path)
+
+def normalising_factor(input_dic):
+    nf = input_dic['NF']
+    for each_col in input_dic:
+        if is_metabolite(each_col):
+            for i in range(0, len(input_dic[each_col])):
+                input_dic[each_col][i] /= nf[i]
+    return input_dic
 
 
+def generate_output(inputdict, path, options):
+    input_dic = inputdict
+    is_method_dic = json.loads(options['IS_method'])
+    need_is = options['need_IS']
+    need_rea = options['need_rea']
+    regression_option = json.loads(options['regression_option'])
+    dilution_factor = float(options['dilution_factor'])
+    nf = options['nf']
+
+    workbook = openpyxl.Workbook()
+
+    write_data(input_dic, workbook, 'raw', 'Raw Data', 1)  #write raw data
 
 
-#############################################################################################
+    if need_is == 'yes':
+        input_dic = is_normalisation(input_dic, is_method_dic)
+        write_data(input_dic, workbook, 'IS', 'IS Normalised Data', 1)
+        stats(input_dic, workbook, 'CV_IS', 'CVs After Internal Standard Normalisation')
+    else:
+        stats(input_dic, workbook, 'CV', 'CVs')
 
-# main()            
+    if need_rea == 'yes':
+        input_dic = reagent_sub(input_dic)
+        if need_is == 'yes':
+            write_data(input_dic, workbook, 'IS_REA', 'IS Normalised, Reagent Blank Subtracted Data', 1)
+            stats(input_dic, workbook, 'CV_IS_REA', 'CVs after IS Normalised and Reagent Blank Subtraction')
+        else:
+            write_data(input_dic, workbook, 'REA', 'Reagent Blank Subtracted Data', 1)
+            stats(input_dic, workbook, 'CV_REA', 'CVs after Reagent Blank Subtraction')
+    input_dic = cal_regression(input_dic, regression_option)
+    if nf == 'yes':
+        input_dic = normalising_factor(input_dic)
+    write_data(input_dic, workbook, 'Con', 'Concentration Data', 1)
+    write_data(input_dic, workbook, 'Con_Dil', 'Concentration Data with Dilution Factor', dilution_factor)
+    stats(input_dic, workbook, 'CV_Con', 'CVs of Concentrations')
 
-path = "/Users/sdayalan/Google Drive/Non_Shared/code/Conc_Cal/Test/"
+    active_before = workbook.active
+    sheet_names = []
+    for sheet in workbook.worksheets:
+        sheet_names.append(sheet.title)
+        if sheet.title == 'Sheet':
+            workbook.remove(sheet)
+    active_after = workbook.active
 
-
-filename = path + "input.csv"
-opfile = path + "out.xlsx"
-
-
-
-workbook = xlsxwriter.Workbook(opfile)
-write_rawdata(workbook, filename)
-
-print("\nReading input file...")
-
-groups = get_groups(filename)
-groups = group_count(filename, groups)
-
-# Calling the internal standard normalising method.
-isnorm = is_normalise(filename)
-text = "IS Normalised Data"
-write_data(workbook, isnorm[0], text)
-
-print("\n\nPerforming Internal Standard Normalisation...")
-
-text = "CVs after Internal Standard Normalisation"
-stats(isnorm[0], groups, workbook, text)
-
-print("\n\nCalculating CVs...")
-
-# Calling the reagent blank subtraction method.
-reg_sub_li = subtract_reg(isnorm[0])
-text = "IS Normalised, Reagent Blank Subtracted Data"
-write_data(workbook, reg_sub_li, text)
-
-print("\n\nPerforming Reagent Blank Subtraction...")
-
-text = "CVs after Internal standard Normalisation and Reagent Blank Subtraction"
-stats(reg_sub_li, groups, workbook, text)
-
-print("\n\nCalculating CVs...")
-
-# Calculating the linear regression model for each metabolite.
-conc_li = linreg(reg_sub_li)
-
-print("\n\nCalculating Linear Regression Models...")
-
-# Calculating concentrations for metabolites
-fin_conc_val = conc_cal(reg_sub_li, conc_li)
-
-print("\n\nCalculating Concentrations...")
-
-text = "IS Normalised, Reagent Blank Subtracted CONCENTRATION Data"
-write_data(workbook, fin_conc_val, text)
+    workbook.save(path)
 
 
-text = "CVs of Concentrations after Internal standard Normalisation and Reagent Blank Subtraction"
-stats(fin_conc_val, groups, workbook, text)
-
-print("\n\nCalculating CVs...")
-
-print("\n\nWriting all output to out.xlsx\n\n\n")
-
-workbook.close()
 
 
 

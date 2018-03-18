@@ -21,10 +21,12 @@
     <title>Result</title>
 </head>
 <body style="font-family: 'PT Serif, serif'">
-<select id="algorithm" class="custom-select">
+<select id="title" class="custom-select">
+    <!--
     <option value="IS Normalisation" selected="selected">IS Normalisation</option>
     <option value="IS + Reagent Blank Subtraction">IS + Reagent Blank Subtraction</option>
     <option value="IS + Reagent Blank Subtraction + Concentration">IS + Reagent Blank Subtraction + Concentration</option>
+    -->
 </select>
 
 
@@ -36,6 +38,7 @@
     <input type="text" id="json_pk_input" name="input_json_pk" value="download_sample" style="display: none">
     <input type="text" id="offset_input" name="offset" value="download_sample" style="display: none">
     <input type="text" id="is_nor" name="is_nor" value="is_nor" style="display: none">
+    <input type="text" id="download_pk" name="download_pk" value="download_pk" style="display: none">
     <input type="submit" value="download result file" class="btn btn-outline-danger">
 </form>
 
@@ -45,21 +48,43 @@
         var selected = JSON.parse(window.sessionStorage.getItem("selected"));
         var input_json_pk = JSON.parse(window.sessionStorage.getItem("input_json_pk"));
         var offset = JSON.parse(window.sessionStorage.getItem('offset'));
-        var algorithm = $('#algorithm').val();
-        var is_nor = JSON.parse(window.sessionStorage.getItem('is_nor'));
-        draw_table(algorithm, result_data);
+        var title = $('#title').val();
+        //var is_nor = JSON.parse(window.sessionStorage.getItem('is_nor'));
+        var title_element = document.getElementById('title');
+        var download_pk = result_data['download_pk'];
+        delete result_data['download_pk'];
+
+        for (title in result_data) {
+            var index = 0;
+            if (!start_with(title, 'CV')) {
+                var ele = document.createElement('option');
+                ele.setAttribute("value", title);
+                if (index == 0) {
+                    ele.setAttribute('selected', 'selected');
+                }
+                ele.innerHTML = title;
+                title_element.appendChild(ele);
+                index += 1;
+            }
+        }
+        draw_table(title, result_data);
+
 
         $('#selected_input').val(JSON.stringify(selected));
         $('#json_pk_input').val(input_json_pk);
         $('#offset_input').val(offset);
-        $('#is_nor').val(is_nor);
+        $('#download_pk').val(download_pk);
+        //$('#is_nor').val(is_nor);
 
 
-        $('#algorithm').on('change', function() {
-            algorithm = $(this).val();
+
+
+
+        $('#title').on('change', function() {
+            title = $(this).val();
             $('#table').DataTable().destroy();
             //$('#table').DataTable().clear();
-            draw_table(algorithm, result_data);
+            draw_table(title, result_data);
         });
     });
 
@@ -73,9 +98,20 @@
         return size;
     }
 
+    function start_with(input_string, search_string) {
+            var index = input_string.indexOf(search_string);
+            if (index == 0) {
+                return true;
+            }
+            else {
+                return false;
+            }
+        }
 
-    function draw_table(algorithm, originData) {
-        var table_data;
+
+    function draw_table(title, originData) {
+        var table_data = originData[title];
+        /*
         if (algorithm == 'IS Normalisation') {
             table_data = originData[1];
         }
@@ -85,6 +121,8 @@
         if (algorithm == 'IS + Reagent Blank Subtraction + Concentration') {
             table_data = originData[5];
         }
+        */
+
         var table_data_array = json_data_to_array(table_data);
         var heads = table_data['heads'];
         var columns = [];
@@ -105,7 +143,7 @@
 
     function json_data_to_array(table_data) {
         var res = [];
-        for (var i = 0; i < table_data['ID'].length; i++) {
+        for (var i = 0; i < table_data['id'].length; i++) {
             var tmp = [];
             for (var each in table_data) {
                 if (each != 'heads') {
