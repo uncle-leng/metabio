@@ -11,6 +11,8 @@ def is_metabolite(name):
 
 def normalise_self(is_list):
     min_val = min(is_list)
+    if min_val == 0:
+        min_val = 1
     for i in range(0, len(is_list)):
         is_list[i] /= min_val
 
@@ -88,6 +90,8 @@ def is_normalisation(input_dic, is_method_dic):
             #metabolite_values = input_dic[each_col]
             is_values = is_dic[is_method_dic[each_col]]
             for i in range(0, len(input_dic[each_col])):
+                if is_values[i] == 0:
+                    is_values[i] = 1
                 input_dic[each_col][i] /= is_values[i]
     return input_dic
 
@@ -126,7 +130,7 @@ def cal_regression(input_dic, regression_option):
                     #points.append([input_dic['Concentration'][i], input_dic[each_col][i]])
                     points.append(tmp)
             for each_point in points:
-                if weight == 'none':
+                if weight is None or weight == 'none':
                     weights.append(1)
                 if weight == '1/x':
                     if each_point[0] == 0:
