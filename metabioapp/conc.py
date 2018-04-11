@@ -130,7 +130,7 @@ def cal_regression(input_dic, regression_option):
                     #points.append([input_dic['Concentration'][i], input_dic[each_col][i]])
                     points.append(tmp)
             for each_point in points:
-                if weight is None or weight == 'none':
+                if weight is None or weight == 'none' or weight == 'None':
                     weights.append(1)
                 if weight == '1/x':
                     if each_point[0] == 0:

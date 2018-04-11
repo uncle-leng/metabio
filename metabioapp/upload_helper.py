@@ -22,38 +22,35 @@ def is_number(s):
 def valid_file(file_path):
     try:
         num_S = 0
-        #num_R = 0
         all_data = pd.read_csv(file_path, header=None).as_matrix()
         head = all_data[0]
-        #if head[0].strip() != 'id' or head[1].strip() != 'Concentration' or head[2].strip() != 'Group' or head[3].strip() != 'IS':
         if head[0].strip() != 'id' \
                 or head[1].strip() != 'Concentration' \
                 or head[2].strip() != 'std_replicate' \
                 or head[3].strip() != 'Group' \
                 or head[4].strip() != 'NF':
-            return False
+            return [False, 'the first row in the csv contains invalid names']
         for i in range(1, len(all_data)):
-            #if is_number(all_data[i][0]) or not is_number(all_data[i][1]) or is_number(all_data[i][2]) or not is_number(all_data[i][3]):
             if is_number(all_data[i][0]) \
                     or not is_number(all_data[i][1]) \
                     or not is_number(all_data[i][2]) \
                     or is_number(all_data[i][3]) \
                     or not is_number(all_data[i][4]):
-                return False
+                return [False, 'concentration, std_replicate and NF should be integers, id and Group should be strings']
             for j in range(5, len(all_data[0])):
                 if not is_number(all_data[i][j]):
-                    return False
+                    return [False, 'metabolite data should be numbers']
             if all_data[i][3] == 'S':
                 num_S += 1
             #if all_data[i][2] == 'R':
                 #num_R += 1
         #if num_S != 0 and num_R != 0:
         if num_S != 0:
-            return True
+            return [True, '']
         else:
-            return False
+            return [False, 'there should be at least 1 group named S']
     except:
-        return False
+        return [False, 'other errors']
 
 
 def strList_to_intList(strList):

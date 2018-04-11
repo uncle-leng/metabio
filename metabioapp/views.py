@@ -150,9 +150,11 @@ def upload(request):
                     for eachline in upload_file:
                         f.write(eachline)
                     f.close()
-                if not valid_file('./tmp_input.csv'):
+                valid = valid_file('./tmp_input.csv')
+                if not valid[0]:
                     return render(request, 'main_page.html', {'form': form,
                                                               'typeError': True,
+                                                              'errorMsg': valid[1],
                                                               'home': False,
                                                               'upload': True,
                                                               'visualization': False})
@@ -165,29 +167,11 @@ def upload(request):
                     inputjsonfile.save()
                     input_json_pk = inputjsonfile.pk
                     f.close()
-                '''
-                with open('./tmp_output.xlsx', 'rb') as f:
-                    downloadfile = DownloadFile()
-                    downloadfile.upload_file = uploadfile
-                    downloadfile.download_file = File(f)
-                    downloadfile.save()
-                    f.close()
-
-                outputjsonfile = OutputJSON()
-                outputjsonfile.download_file = downloadfile
-                transfer_to_json('./tmp_output.xlsx', './tmp_output.json')
-                with open('./tmp_output.json', 'rb') as f:
-                    outputjsonfile.JSON_file = File(f)
-                    outputjsonfile.save()
-                    f.close()
-                os.remove('./tmp_output.json')
-                os.remove('./tmp_input.csv')
-                os.remove('./tmp_output.xlsx')
-                '''
                 os.remove('./tmp_input_json.json')
             except:
                 return render(request, 'main_page.html', {'form': form,
                                                           'typeError': True,
+                                                          'errorMsg': 'unknown error',
                                                           'home': False,
                                                           'upload': True,
                                                           'visualization': False})
@@ -202,6 +186,7 @@ def upload(request):
         else:
             return render(request, 'main_page.html', {'form': form,
                                                       'typeError': True,
+                                                      'errorMsg': 'form is broken',
                                                       'home': False,
                                                       'upload': True,
                                                       'visualization': False})

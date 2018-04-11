@@ -111,7 +111,7 @@
                                         </p>
                                     </div>
                                     {% if typeError %}
-                                        <p style="color: red; margin-top: 0; font-size: .875rem;"> invalid file !</p>
+                                        <p style="color: red; margin-top: 0; font-size: .875rem;"> {{ errorMsg }}</p>
                                     {% endif %}
                                     <input type="submit" class="btn btn-outline-success" value="upload">
                                 </div>
@@ -133,6 +133,7 @@
                                         <option selected value="yes">yes</option>
                                         <option value="no">no</option>
                                     </select>
+                                    <label id="IS_notification" style="display: none; color: red; font-size: .875rem" for="IS_nor" >you haven't select any IS method yet</label>
                                 </div>
 
                                 <div class="form-group">
@@ -250,15 +251,7 @@
 
                                 </div>
 
-                                <div class="col-md-7">
-                                    <div id="chart"></div>
-                                    <div>
-                                        <table id="main_table" class="row-border" width="100%"></table>
-                                    </div>
-
-                                </div>
-
-                               <div class="col-md-1">
+                                <div class="col-md-1">
 
                                         <label for="regression_method" style="margin-top: 20px">Type</label>
                                         <select id="regression_method" class="custom-select-sm">
@@ -297,7 +290,15 @@
                                           </label>
                                         </div>
 
-                                        <input type="button" id="confirm_regression" value="confirm_regression" class="btn btn-outline-danger">
+                                    <button type="button" id="confirm_regression" class="btn btn-outline-danger">confirm<br>regression</button>
+                                </div>
+
+                                <div class="col-md-7" id="chart_wrapper">
+                                    <div id="chart"></div>
+                                    <div>
+                                        <table id="main_table" class="row-border" width="100%"></table>
+                                    </div>
+
                                 </div>
 
 
@@ -330,9 +331,17 @@
         var modal = document.getElementById('myModal');
         var btn = document.getElementById("confirm");
         var span = document.querySelector('.close');
+        var IS_notification = document.getElementById('IS_notification');
 
         btn.onclick = function() {
             modal.style.display = "block";
+            var emp = empty_IS(IS_select);
+            if (emp) {
+                IS_notification.style.display = "block";
+            }
+            else {
+                IS_notification.style.display = "none";
+            }
         };
 
         span.onclick = function() {
@@ -409,31 +418,6 @@
         });
 
         $('#show_result').on('click', function() {
-            //var nor = $('#IS_Normalisation').prop("checked");
-            /*
-            $.ajax({
-                type: 'POST',
-                async: true,
-                traditional: true,
-                url: '../show_result/',
-                dataType: 'json',
-                data: {'selected': JSON.stringify(selected),
-                        'input_json_pk': {{ input_json_pk }},
-                        'offset': offset.toString(),
-                        //'is_nor': nor.toString(),
-                        'is_nor': 'true',
-                        'csrfmiddlewaretoken': '{{ csrf_token }}'},
-                success: function(result) {
-                    window.sessionStorage.setItem("result_data", JSON.stringify(result));
-                    window.sessionStorage.setItem('selected', JSON.stringify(selected));
-                    window.sessionStorage.setItem('input_json_pk', {{ input_json_pk }});
-                    window.sessionStorage.setItem('offset', offset.toString());
-                    window.sessionStorage.setItem('is_nor', nor.toString());
-                    window.location.href = './result_page/';
-                },
-                error: function() {alert('can not show result!!!')}
-            })
-            */
             var IS_nor;
             var rea;
             var dilution_factor;
@@ -458,19 +442,6 @@
                 'nf': $('#NF').val()
             };
 
-            var data_to_be_sent = {
-                'selected': JSON.stringify(selected),
-                'input_json_pk': {{ input_json_pk }},
-                'offset': offset.toString(),
-                'user_options': JSON.stringify(user_options),
-                //'is_nor': nor.toString(),
-                //'is_nor': 'true',
-                //'IS_method': IS_nor,
-                //'rea': rea,
-                //'dilution_factor': dilution_factor,
-                'csrfmiddlewaretoken': '{{ csrf_token }}'
-            };
-
             $.ajax({
                 type: 'POST',
                 async: true,
@@ -489,13 +460,11 @@
                     window.sessionStorage.setItem('selected', JSON.stringify(selected));
                     window.sessionStorage.setItem('input_json_pk', {{ input_json_pk }});
                     window.sessionStorage.setItem('offset', offset.toString());
-                    //window.sessionStorage.setItem('is_nor', nor.toString());
                     window.location.href = './result_page/';
                 },
                 error: function() {alert('can not show result!!!')}
             })
 
-            //alert(JSON.stringify(res));
         });
 
         $('#dataY tbody').on('click', 'tr', function() {
@@ -514,38 +483,10 @@
                 var tmp = '#' + IS_select[dataY];
                 $(tmp).click();
             }
+            //$('#regression_method').val(regression_options[get_selected_metabolo()][0]);
+            //$('#regression_origin').val(regression_options[get_selected_metabolo()][1]);
+            //$('#regression_weight').val(regression_options[get_selected_metabolo()][2]);
             update_main_table();
-            /*
-            var user_options = {
-                'IS_method': JSON.stringify(IS_select),
-                //'need_IS': $('#IS_nor').val(),
-                'need_IS': 'yes',
-                //'need_rea': $('#rea').val(),
-                'need_rea': 'yes',
-                'regression_option': JSON.stringify(regression_options),
-                'dilution_factor': '10',
-                'nf': 'yes'
-            };
-            $.ajax({
-                type: 'POST',
-                async: true,
-                traditional: true,
-                url: '../show_result/',
-                dataType: 'json',
-                data: {'selected': JSON.stringify(selected),
-                        'input_json_pk': {{ input_json_pk }},
-                        'offset': offset.toString(),
-                        'user_options': JSON.stringify(user_options),
-                        //'is_nor': nor.toString(),
-                        //'is_nor': 'true',
-                        'csrfmiddlewaretoken': '{{ csrf_token }}'},
-                success: function(result) {
-                    $('#table').DataTable().destroy();
-                    fill_main_table(result);
-                },
-                error: function() {alert('can not show result!!!')}
-            })
-            */
 
         });
 
@@ -625,6 +566,9 @@
                     for (var i = 0; i < all_metabolo.length; i++) {
                         IS_select[all_metabolo[i]] = 'None';
                     }
+                    for (var i = 0; i < all_metabolo.length; i++) {
+                        regression_options[all_metabolo[i]] = ['linear', 'default', 'none']
+                    }
 
                     table = $('#dataY').DataTable({"scrollY": "300px",
                                             "scrollCollapse": true,
@@ -663,6 +607,9 @@
                       fill_IS_select_table(originData);
                       for (var i = 0; i < all_metabolo.length; i++) {
                         IS_select[all_metabolo[i]] = 'None';
+                        }
+                       for (var i = 0; i < all_metabolo.length; i++) {
+                        regression_options[all_metabolo[i]] = ['linear', 'default', 'none']
                         }
                       table = $('#dataY').DataTable({"scrollY": "300px",
                                             "scrollCollapse": true,
@@ -1050,7 +997,6 @@
             var top = 0;
             var buttom = 0;
             var total = 0;
-            var ave = 0;
             for (var i = 0; i < origin_points.length; i++) {
                 total += origin_points[i][1];
             }
@@ -1184,6 +1130,19 @@
                 },
                 error: function() {alert('can not show result!!!')}
             })
+        }
+
+
+        function empty_IS(IS_select) {
+            if (IS_select == {}) {
+                return true;
+            }
+            else {
+                for (var each in IS_select) {
+                    if (IS_select[each] != 'None') {return false;}
+                }
+            }
+            return true;
         }
     </script>
 

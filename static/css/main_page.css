@@ -152,6 +152,9 @@ p {font-size:100%;}
 #try {
         margin: 0 auto;
 }
+#chart_wrapper {
+    padding-left: 30px !important;
+}
 
 
 
