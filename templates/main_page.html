@@ -168,10 +168,10 @@
                         </div>
 
                         <div class="container" style="margin-left: 0; margin-right: 0">
-                            <div class="row" class="col-md-12">
+                            <div class="row">
 
-                                <div class="col-md-2">
-                                    <div class="row col-md-2">
+                                <div class="col-2">
+                                    <div class="row col-2">
                                         <table id="dataY" class="row-border" cellspacing="0">
                                             <thead>
                                                 <tr>
@@ -190,7 +190,7 @@
                                     </div>
                                 </div>
 
-                                <div id="control_panel" class="col-md-2">
+                                <div id="control_panel" class="col-2">
 
                                         <table id="IS_select" class="row-border" cellspacing="0">
                                             <thead>
@@ -205,80 +205,33 @@
                                                 </tr>
                                             </tbody>
                                         </table>
-                                        <!--
-                                        <div class="form-group">
-                                            <input type="checkbox-inline" class="filled-in" value="" id="IS_Normalisation">
-                                            <label class="checkbox_word" for="IS_Normalisation">IS</label>
-                                        </div>
-
-                                        <div class="form-group">
-                                            <input type="checkbox-inline" class="filled-in" value="" id="Reagent_Blank_Subtraction">
-                                            <label class="checkbox_word" for="Reagent_Blank_Subtraction">RBS</label>
-                                        </div>
-                                        -->
 
                                         <input type="button" id="assign" value="assign" class="btn btn-outline-success">
                                         <input type="button" id="assign_all" value="assign all" class="btn btn-outline-warning" style="margin-top: 20px">
                                         <input type="button" id="cancel_all" value="cancel all" class="btn btn-outline-danger" style="margin-top: 20px">
 
-                                        <!--
-
-                                        <div class="input-group mb-3">
-                                            <select id="regression_method" class="custom-select">
-                                              <option selected value="linear">linear</option>
-                                              <option value="quadratic">quadratic</option>
-                                            </select>
-                                        </div>
-
-                                        <div class="input-group mb-3">
-                                            <select id="regression_origin" class="custom-select">
-                                                <option selected value="default">default</option>
-                                                <option value="forced">forced</option>
-                                            </select>
-                                        </div>
-
-                                        <div class="input-group mb-3">
-                                            <select id="regression_weight" class="custom-select">
-                                                <option selected value="None">None</option>
-                                                <option value="1/x">1/x</option>
-                                                <option value="1/x^2">1/x^2</option>
-                                                <option value="1/y">1/y</option>
-                                                <option value="1/y^2">1/y^2</option>
-                                            </select>
-                                        </div>
-
-                                        -->
-
                                 </div>
 
-                                <div class="col-md-1">
-
-                                        <label for="regression_method" style="margin-top: 20px">Type</label>
+                                <div class="col-1">
+                                        <label for="regression_method">Type</label>
                                         <select id="regression_method" class="custom-select-sm">
-                                              <option selected value="linear">linear</option>
-                                              <option value="quadratic">quad</option>
+                                              <option value="linear">linear</option>
+                                              <option value="quad">quad</option>
                                         </select>
-
-
 
                                         <label for="regression_origin" style="margin-top: 20px">Origin</label>
                                         <select id="regression_origin" class="custom-select-sm">
-                                                <option selected value="default">default</option>
+                                                <option value="default">default</option>
                                                 <option value="forced">forced</option>
                                         </select>
-
-
                                         <label for="regression_weight" style="margin-top: 20px">Weight</label>
                                         <select id="regression_weight" class="custom-select-sm">
-                                            <option selected value="None">none</option>
+                                            <option value="none">none</option>
                                             <option value="1/x">1/x</option>
                                             <option value="1/x^2">1/x^2</option>
                                             <option value="1/y">1/y</option>
                                             <option value="1/y^2">1/y^2</option>
                                         </select>
-
-                                        <!--<input type="checkbox" class="form-check-input" id="Reagent_Blank_Subtraction" style="margin-top: 40px">
-                                        <label class="form-check-label" for="Reagent_Blank_Subtraction">RBS</label>-->
 
                                         <div class="checkbox">
                                           <label>
@@ -293,7 +246,7 @@
                                     <button type="button" id="confirm_regression" class="btn btn-outline-danger">confirm<br>regression</button>
                                 </div>
 
-                                <div class="col-md-7" id="chart_wrapper">
+                                <div class="col-7" id="chart_wrapper">
                                     <div id="chart"></div>
                                     <div>
                                         <table id="main_table" class="row-border" width="100%"></table>
@@ -473,7 +426,6 @@
             table.$('tr.selected').removeClass('selected');
             $(this).addClass('selected');
             var dataY = get_selected_metabolo();
-            var dilu = $('#dilution').val();
             draw_chart(data, dataX, dataY);
             //var nor = $('#IS_Normalisation').prop("checked");
             if (!IS_select.hasOwnProperty(dataY) || IS_select[dataY] == 'None') {
@@ -483,9 +435,19 @@
                 var tmp = '#' + IS_select[dataY];
                 $(tmp).click();
             }
-            //$('#regression_method').val(regression_options[get_selected_metabolo()][0]);
-            //$('#regression_origin').val(regression_options[get_selected_metabolo()][1]);
-            //$('#regression_weight').val(regression_options[get_selected_metabolo()][2]);
+            var cur_metabolo = get_selected_metabolo();
+            var cur_method = regression_options[get_selected_metabolo()][0];
+            var cur_origin = regression_options[get_selected_metabolo()][1];
+            var cur_weight = regression_options[get_selected_metabolo()][2];
+            $('#regression_method').val(cur_method);
+            $('#regression_origin').val(cur_origin);
+            $('#regression_weight').val(cur_weight);
+            //$('#regression_origin option[value="' + cur_origin + '"]').attr('selected', true);
+            //$('#regression_weight option[value="' + cur_weight + '"]').attr('selected', true);
+
+
+            option = get_option(two_dimen_data, selected, get_selected_metabolo());
+            myChart.setOption(option);
             update_main_table();
 
         });
@@ -501,19 +463,19 @@
         $('#regression_method').on('change', function() {
            option = get_option(two_dimen_data, selected, get_selected_metabolo());
            myChart.setOption(option);
-           regression_options[get_selected_metabolo()][0] = $(this).val();
+           //regression_options[get_selected_metabolo()][0] = $(this).val();
         });
 
         $('#regression_origin').on('change', function() {
             option = get_option(two_dimen_data, selected, get_selected_metabolo());
             myChart.setOption(option);
-            regression_options[get_selected_metabolo()][1] = $(this).val();
+            //regression_options[get_selected_metabolo()][1] = $(this).val();
         });
 
         $('#regression_weight').on('change', function() {
             option = get_option(two_dimen_data, selected, get_selected_metabolo());
             myChart.setOption(option);
-            regression_options[get_selected_metabolo()][2] = $(this).val();
+            //regression_options[get_selected_metabolo()][2] = $(this).val();
         });
 
         $('#assign').on('click', function() {
@@ -811,41 +773,6 @@
                     }
                     row_num += 1;
             }
-
-            /*
-            if (IS_method == 'None') {
-                for (var i = 0; i < get_length(originData[dataX]); i++) {
-                    if (originData['Group'][i] == 'S') {
-                        two_dimen_data.push([hData[i], vData[i]]);
-                    }
-                }
-
-                for (var j = 0; j < get_length(originData[dataX]); j++) {
-                    if (originData['Group'][j] == 'S') {
-                        offset = row_num;
-                        break;
-                    }
-                    row_num += 1;
-                }
-            }
-
-            else {
-                var ISData = originData[IS_method];
-                for (var i = 0; i < get_length(originData[dataX]); i++) {
-                    if (originData['Group'][i] == 'S') {
-                        two_dimen_data.push([hData[i], vData[i] / ISData[i]]);
-                    }
-                }
-
-                for (var j = 0; j < get_length(originData[dataX]); j++) {
-                    if (originData['Group'][j] == 'S') {
-                        offset = row_num;
-                        break;
-                    }
-                    row_num += 1;
-                }
-            }
-            */
             option = get_option(two_dimen_data, selected, dataY);
             myChart.hideLoading();
             myChart.setOption(option);
@@ -904,28 +831,6 @@
             var data_copy = jQuery.extend(true, {}, originData);
             var tmp = originData_to_rea(data_copy);
             return originData_to_is_nor(tmp, get_selected_IS_method());
-            /*
-            var sum = 0;
-            var count = 0;
-            for (var i = 0; i < data_copy[get_selected_metabolo()].length; i++) {
-                if (data_copy['Group'][i] == 'R') {
-                    sum += data_copy[get_selected_metabolo()][i];
-                    count += 1;
-                }
-            }
-            var ave = sum / count;
-            for (var j = 0; j < data_copy[get_selected_metabolo()].length; j++) {
-                if (data_copy['Group'][j] == 'S') {
-                    data_copy[get_selected_metabolo()][j] -= ave;
-                }
-            }
-            var IS_data = data_copy[get_selected_IS_method()];
-            for (var k =0; k < IS_data.length; k++) {
-                if (data_copy['Group'][k] == 'S') {
-                    data_copy[get_selected_metabolo()][k] /= IS_data[k];
-                }
-            }
-            */
         }
 
         function originData_to_checkboxData(originData, checkboxes) {
@@ -959,7 +864,7 @@
                     all_metabolo.push(each);
                     regression_options[each] = ['linear', 'default', 'none'];
                     $('#metabolo').append("<tr id=" + each + "></tr>");
-                    var eachid = '#' + each;
+                    var eachid = '#' + escapeJquery(each);
                     //$(eachid).attr("style", "background-color: rgba(255,255,255,0.8)");
                     $(eachid).append("<td>" + each + "</td>");
                 }
@@ -984,7 +889,7 @@
             if ($('#regression_method').val() == 'linear') {
                 exp = [0, expression[1]];
             }
-            if ($('#regression_method').val() == 'quadratic') {
+            if ($('#regression_method').val() == 'quad') {
                 exp = [expression[2], expression[1]];
             }
             for (var i = 0; i < regression_points.length; i++) {
@@ -1143,6 +1048,25 @@
                 }
             }
             return true;
+        }
+
+
+        function escapeJquery(srcString) {
+            var escapseResult = srcString;
+            var jsSpecialChars = ["\\", "^", "$", "*", "?", ".", "+", "(", ")", "[",
+                    "]", "|", "{", "}"];
+            var jquerySpecialChars = ["~", "`", "@", "#", "%", "&", "=", "'", "\"",
+                    ":", ";", "<", ">", ",", "/"];
+            for (var i = 0; i < jsSpecialChars.length; i++) {
+                escapseResult = escapseResult.replace(new RegExp("\\"
+                    + jsSpecialChars[i], "g"), "\\"
+                    + jsSpecialChars[i]);
+            }
+            for (var i = 0; i < jquerySpecialChars.length; i++) {
+                escapseResult = escapseResult.replace(new RegExp(jquerySpecialChars[i],
+                    "g"), "\\" + jquerySpecialChars[i]);
+            }
+            return escapseResult;
         }
     </script>
 

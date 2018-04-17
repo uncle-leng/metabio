@@ -326,7 +326,7 @@ def weighted_regression(request):
         for each_point in points:
             if each_point[1] is None:
                 each_point[1] = 0
-            if weight == 'None':
+            if weight == 'None' or weight == 'none':
                 weights.append(1)
             if weight == '1/x':
                 if each_point[0] == 0:
@@ -351,7 +351,7 @@ def weighted_regression(request):
             dataX.append(each_point[0])
             dataY.append(each_point[1])
             x = 1
-        if request.POST['regression_method'] == 'quadratic':
+        if request.POST['regression_method'] == 'quad':
             equation, stats = poly.polyfit(x=dataX, y=dataY, deg=2, w=weights, full=True)
         if request.POST['regression_method'] == 'linear':
             equation, stats = poly.polyfit(x=dataX, y=dataY, deg=1, w=weights, full=True)
