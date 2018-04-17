@@ -36,7 +36,7 @@ def cal_equation(y, equation, origin):
         if len(equation) == 2:
             return y / equation[1]
         if len(equation) == 3:
-            delta = equation[1]**2 + 4 * equation[3] * y
+            delta = equation[1]**2 + 4 * equation[2] * y
             if delta < 0:
                 return 0
             x1 = (-equation[1] + delta ** (1.0 / 2)) / 2 * equation[2]

@@ -1,14 +1,4 @@
 
-
-/* checkbox */
-
-
-
-
-
-
-
-/* 弹窗 (background) */
 .modal {
     display: none; /* 默认隐藏 */
     position: fixed; /* 固定定位 */
@@ -22,7 +12,7 @@
     background-color: rgba(0,0,0,0.4);
 }
 
-/* 弹窗内容 */
+
 .modal-content {
     background-color: #fefefe;
     margin: 15% auto;
@@ -31,7 +21,7 @@
     width: 80%;
 }
 
-/* 关闭按钮 */
+
 .close {
     color: #aaa;
     float: right;
@@ -92,25 +82,11 @@ p {font-size:100%;}
 
 }
 
-
 #sidebar {
         min-width: 250px;
         max-width: 250px;
         height: 100vh;
-
         }
-/*
-.left {
-
-        margin-top: 120px;
-        margin-bottom: 100px;
-        margin-left:0;
-        position: absolute;
-        box-sizing: border-box;
-        width: 100px;
-        height: 100%;
-        background: transparent bottom;}
-*/
 
 .right {
         margin-left: 0;
@@ -156,6 +132,19 @@ p {font-size:100%;}
     padding-left: 60px !important;
 }
 
+/*
+#dataY_wrapper {
+    background-color: rgba(171, 236, 204, 0.5);
+}
+
+#control_panel {
+    background-color: rgba(171, 236, 204, 0.5);
+}
+
+#regression_option_wrapper {
+    background-color: rgba(171, 236, 204, 0.5);
+}
+*/
 
 
 
