@@ -158,7 +158,6 @@ def upload(request):
                                                               'home': False,
                                                               'upload': True,
                                                               'visualization': False})
-                #generate_output('./tmp_input.csv', 'tmp_output.xlsx', False)
                 transfer_to_inputjson('./tmp_input.csv', './tmp_input_json.json')
                 with open('./tmp_input_json.json', 'rb') as f:
                     inputjsonfile = InputJSON()

@@ -28,16 +28,18 @@ def valid_file(file_path):
                 or head[1].strip() != 'Concentration' \
                 or head[2].strip() != 'std_replicate' \
                 or head[3].strip() != 'Group' \
-                or head[4].strip() != 'NF':
+                or head[4].strip() != 'NF'\
+                or head[5].strip() != 'Dilution':
             return [False, 'the first row in the csv contains invalid names']
         for i in range(1, len(all_data)):
             if is_number(all_data[i][0]) \
                     or not is_number(all_data[i][1]) \
                     or not is_number(all_data[i][2]) \
                     or is_number(all_data[i][3]) \
-                    or not is_number(all_data[i][4]):
+                    or not is_number(all_data[i][4]) \
+                    or not is_number(all_data[i][5]):
                 return [False, 'concentration, std_replicate and NF should be integers, id and Group should be strings']
-            for j in range(5, len(all_data[0])):
+            for j in range(6, len(all_data[0])):
                 if not is_number(all_data[i][j]):
                     return [False, 'metabolite data should be numbers']
             if all_data[i][3] == 'S':
@@ -112,15 +114,15 @@ def generate_filtered_input(input_path, selected, offset):
     with open(input_path, 'r') as f:
         reader = csv.reader(f)
         rows = [row for row in reader]
-        categories = [x.strip() for x in rows[0][4:]]
+        categories = [x.strip() for x in rows[0][6:]]
         for i in range(int(offset)+1, len(rows)):
             for j in range(len(categories)):
                 index = str(i-1-int(offset))+','+categories[j]
                 if (index in selected) and (selected[index]):
                     for k in range(int(offset)+1, len(rows)):
-                        if rows[k][0] == rows[i][0] and rows[k][1] == rows[i][1] and rows[k][j+4] == rows[i][j+4]:
-                            rows[k][j+4] = 0
-                    rows[i][j+4] = 0
+                        if rows[k][0] == rows[i][0] and rows[k][1] == rows[i][1] and rows[k][j+6] == rows[i][j+6]:
+                            rows[k][j+6] = 0
+                    rows[i][j+6] = 0
 
         for k in range(len(rows)):
             res.append(rows[k])

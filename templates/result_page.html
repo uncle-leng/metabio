@@ -43,12 +43,13 @@
 </form>
 
 <script type="text/javascript">
+    var result_data = JSON.parse(window.sessionStorage.getItem("result_data"));
+    var selected = JSON.parse(window.sessionStorage.getItem("selected"));
+    var input_json_pk = JSON.parse(window.sessionStorage.getItem("input_json_pk"));
+    var offset = JSON.parse(window.sessionStorage.getItem('offset'));
+    var title = $('#title').val();
     $(function() {
-        var result_data = JSON.parse(window.sessionStorage.getItem("result_data"));
-        var selected = JSON.parse(window.sessionStorage.getItem("selected"));
-        var input_json_pk = JSON.parse(window.sessionStorage.getItem("input_json_pk"));
-        var offset = JSON.parse(window.sessionStorage.getItem('offset'));
-        var title = $('#title').val();
+
         //var is_nor = JSON.parse(window.sessionStorage.getItem('is_nor'));
         var title_element = document.getElementById('title');
         var download_pk = result_data['download_pk'];
@@ -74,19 +75,16 @@
         $('#json_pk_input').val(input_json_pk);
         $('#offset_input').val(offset);
         $('#download_pk').val(download_pk);
-        //$('#is_nor').val(is_nor);
 
+    });
 
-
-
-
-        $('#title').on('change', function() {
+     $('#title').on('change', function() {
             title = $(this).val();
             $('#table').DataTable().destroy();
+            $('#table').empty();
             //$('#table').DataTable().clear();
             draw_table(title, result_data);
         });
-    });
 
     function get_length(obj) {
         var size = 0;
@@ -108,27 +106,15 @@
             }
         }
 
-
     function draw_table(title, originData) {
         var table_data = originData[title];
-        /*
-        if (algorithm == 'IS Normalisation') {
-            table_data = originData[1];
-        }
-        if (algorithm == 'IS + Reagent Blank Subtraction') {
-            table_data = originData[3];
-        }
-        if (algorithm == 'IS + Reagent Blank Subtraction + Concentration') {
-            table_data = originData[5];
-        }
-        */
-
         var table_data_array = json_data_to_array(table_data);
         var heads = table_data['heads'];
         var columns = [];
         for (var i = 0; i < heads.length; i++) {
             columns.push({title: heads[i]});
         }
+
 
         $('#table').DataTable({
             data: table_data_array,
@@ -143,7 +129,10 @@
 
     function json_data_to_array(table_data) {
         var res = [];
-        for (var i = 0; i < table_data['id'].length; i++) {
+        var length;
+        if (table_data['heads'].indexOf('id') != -1) {length = table_data['id'].length;}
+        else {length = table_data['IS_method'].length;}
+        for (var i = 0; i < length; i++) {
             var tmp = [];
             for (var each in table_data) {
                 if (each != 'heads') {

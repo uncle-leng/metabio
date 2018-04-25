@@ -152,12 +152,13 @@
                                     </select>
                                 </div>
 
-                              <div class="form-group row">
+                              <!--<div class="form-group row">
                                   <label for="dilution" class="offset-5 col-form-label">Dilution Factor </label>
                                   <div class="col-sm-2">
                                     <input type="text" class="form-control" id="dilution" placeholder="10" onkeyup="value=value.replace(/[^\d]/g,'')">
                                   </div>
                               </div>
+                              -->
 
                               <div class="form-group">
                                   <input type="button" id="show_result" value="show result" class="btn btn-outline-danger">
@@ -212,7 +213,11 @@
 
                                 </div>
 
-                                <div class="col-1" id="regression_option_wrapper">
+
+
+                                <div class="col-8" id="chart_wrapper">
+
+                                    <div class="form-check form-check-inline" id="regression_option_wrapper">
                                         <label for="regression_method">Type</label>
                                         <select id="regression_method" class="custom-select-sm">
                                               <option value="linear">linear</option>
@@ -233,20 +238,21 @@
                                             <option value="1/y^2">1/y^2</option>
                                         </select>
 
-                                        <div class="checkbox">
+                                        <!--<div class="checkbox">-->
                                           <label>
-                                            <input type="checkbox" id="Reagent_Blank_Subtraction" style="margin-top: 40px">
+                                            <input type="checkbox" id="Reagent_Blank_Subtraction">
                                             <span class="checkbox-icon-wrapper">
                                               <span class="checkbox-icon glyphicon glyphicon-ok"></span>
                                             </span>
                                             RBS
                                           </label>
-                                        </div>
+                                        <!--</div>-->
 
-                                    <button type="button" id="confirm_regression" class="btn btn-outline-danger" style="font-size: x-small">confirm<br>regression</button>
+                                        <button type="button" id="confirm_regression" class="btn btn-outline-danger" style="font-size: x-small">confirm<br>regression</button>
                                 </div>
 
-                                <div class="col-7" id="chart_wrapper">
+
+
                                     <div id="chart"></div>
                                     <div>
                                         <table id="main_table" class="row-border" width="100%"></table>
@@ -857,6 +863,7 @@
                     each != 'IS' &&
                     each != 'Concentration' &&
                     each != 'Group' &&
+                    each != 'Dilution' &&
                     !start_with(each, 'IS') &&
                     !start_with(each, 'std') &&
                     !start_with(each, 'NF')) {
@@ -1003,7 +1010,7 @@
             var need_IS = $('#IS_nor').val();
             var need_rea = $('#rea').val();
             var dilution_factor = $('#dilution').val();
-            if (dilution_factor == "") {dilution_factor = '10';}
+            //if (dilution_factor == "") {dilution_factor = '10';}
 
 
              var user_options = {
@@ -1013,7 +1020,7 @@
                 //'need_rea': $('#rea').val(),
                 'need_rea': need_rea,
                 'regression_option': JSON.stringify(regression_options),
-                'dilution_factor': dilution_factor,
+                //'dilution_factor': dilution_factor,
                 'nf': 'yes'
             };
             $.ajax({

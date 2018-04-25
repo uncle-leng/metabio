@@ -5,7 +5,7 @@ from numpy import array, mean, std
 
 
 def is_metabolite(name):
-    if name != 'id' and name != 'Concentration' and name != 'Group' and name != 'std_replicate' and name != 'NF' and not name.startswith('IS'):
+    if name != 'id' and name != 'Concentration' and name != 'Group' and name != 'std_replicate' and name != 'NF'  and name != 'Dilution' and not name.startswith('IS'):
         return True
     return False
 
@@ -175,12 +175,29 @@ def write_data(input_dic, workbook, sheet_name, text, dilution_factor):
     for i in range(0, len(input_dic['id'])):
         tmp = []
         for each_col in input_dic:
-            if each_col == 'id' or each_col == 'Group':
+            if each_col == 'id' or each_col == 'Group' or each_col == 'std_replicate' or each_col == 'Dilution' or each_col == 'NF':
                 tmp.append(input_dic[each_col][i])
             else:
-                tmp.append(input_dic[each_col][i] * dilution_factor)
+                if type(dilution_factor) is list:
+                    tmp.append(input_dic[each_col][i] * dilution_factor[i])
+                else:
+                    tmp.append(input_dic[each_col][i] * dilution_factor)
         cur_sheet.append(tmp)
     #workbook.save(workbook_path)
+
+def write_options(input_dic, is_method_dic, regression_option, workbook):
+    cur_sheet = workbook.create_sheet(title='Opt')
+    cur_sheet.append(['User Options'])
+    head = ['metabolite', 'IS_method', 'Type', 'Origin', 'Weight']
+    cur_sheet.append(head)
+    for each_col in input_dic:
+        tmp = []
+        if not is_metabolite(each_col):
+            continue
+        else:
+            tmp = [each_col, is_method_dic[each_col], regression_option[each_col][0], regression_option[each_col][1], regression_option[each_col][2]]
+        cur_sheet.append(tmp)
+
 
 def stats(input_dic, workbook, sheet_name, text):
     group_index = {}
@@ -228,7 +245,8 @@ def generate_output(inputdict, path, options):
     need_is = options['need_IS']
     need_rea = options['need_rea']
     regression_option = json.loads(options['regression_option'])
-    dilution_factor = float(options['dilution_factor'])
+    #dilution_factor = float(options['dilution_factor'])
+    dilution_factor = input_dic['Dilution']
     nf = options['nf']
 
     workbook = openpyxl.Workbook()
@@ -257,6 +275,7 @@ def generate_output(inputdict, path, options):
     write_data(input_dic, workbook, 'Con', 'Concentration Data', 1)
     write_data(input_dic, workbook, 'Con_Dil', 'Concentration Data with Dilution Factor', dilution_factor)
     stats(input_dic, workbook, 'CV_Con', 'CVs of Concentrations')
+    write_options(input_dic, is_method_dic, regression_option, workbook)
 
     active_before = workbook.active
     sheet_names = []
