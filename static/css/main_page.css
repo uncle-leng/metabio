@@ -46,14 +46,14 @@ thead {
 }
 
 
-#main_page_nav {
-    height : 75px;
 
+#main_page_nav {
+    height : 50px !important;
 }
 
 h1 {font-size:250%;}
 h2 {font-size:200%;}
-p {font-size:100%;}
+p {font-size:120%;}
 
 
 #main_table_wrapper {
@@ -130,6 +130,8 @@ p {font-size:100%;}
 }
 #chart_wrapper {
     padding-left: 60px !important;
+}
+#header_wrapper {
 }
 
 /*
