@@ -96,8 +96,6 @@ p {font-size:120%;}
         box-sizing: border-box;
         float: left;
         text-align: center;
-        overflow-y: hidden;
-        overflow-x: hidden;
         color: #0056b3;
         min-width: 100%;
         min-height: 500px;}

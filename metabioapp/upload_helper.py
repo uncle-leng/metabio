@@ -110,6 +110,8 @@ def transfer_to_inputjson(input_path, output_path):
         f.close()
 
 def generate_filtered_input(input_path, selected, offset):
+
+
     res = []
     with open(input_path, 'r') as f:
         reader = csv.reader(f)
@@ -129,6 +131,7 @@ def generate_filtered_input(input_path, selected, offset):
 
         f.close()
     return json.dumps(res)
+
 
 
 def generate_filtered_output(input_file, output_path):

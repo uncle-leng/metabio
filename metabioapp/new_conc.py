@@ -72,8 +72,11 @@ def is_normalise(filename):
     intarr = arr.astype(numpy.int)
 
     isnorm = []
-    #isnorm = intarr[:, 0] / intarr[:, 0].min()
-    isnorm = intarr[:, 0] / intarr[:, 0].max()
+    if intarr[:, 0].min() == 0:
+        isnorm = intarr[:, 0]
+    else:
+        isnorm = intarr[:, 0] / intarr[:, 0].min()
+    #isnorm = intarr[:, 0] / intarr[:, 0].max()
     finalarr = numpy.array(isnorm)
 
     for i in range(1, len(intarr[0])):

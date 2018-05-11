@@ -5,7 +5,7 @@ from numpy import array, mean, std
 
 
 def is_metabolite(name):
-    if name != 'id' and name != 'Concentration' and name != 'Group' and name != 'std_replicate' and name != 'NF'  and name != 'Dilution' and not name.startswith('IS'):
+    if name != 'id' and name != 'Concentration' and name != 'Group' and name != 'std_replicate' and name != 'NF' and name != 'Dilution' and not name.startswith('IS'):
         return True
     return False
 
@@ -107,7 +107,8 @@ def reagent_sub(input_dic):
             ave = total / count
 
             for i in range(len(input_dic[each_col])):
-                input_dic[each_col][i] -= ave
+                if input_dic[each_col][i] != 0:
+                    input_dic[each_col][i] -= ave
     return input_dic
 
 def cal_regression(input_dic, regression_option):
@@ -123,13 +124,15 @@ def cal_regression(input_dic, regression_option):
             equation = []
             for i in range(0, len(input_dic[each_col])):
                 weights = []
-                if input_dic['Group'][i] == 'S':
+                cur_value = input_dic[each_col][i]
+                if input_dic['Group'][i] == 'S' and input_dic[each_col][i] != 0:
                     tmp = []
                     tmp.append(input_dic['Concentration'][i])
                     tmp.append(input_dic[each_col][i])
                     #points.append([input_dic['Concentration'][i], input_dic[each_col][i]])
                     points.append(tmp)
             for each_point in points:
+
                 if weight is None or weight == 'none' or weight == 'None':
                     weights.append(1)
                 if weight == '1/x':
@@ -160,6 +163,7 @@ def cal_regression(input_dic, regression_option):
             elif method == 'linear':
                 equation, stats = poly.polyfit(x=dataX, y=dataY, deg=1, w=weights, full=True)
             res = cal_predict_points(input_dic[each_col], equation, origin)
+            x = 1
             for i in range(0, len(res)):
                 input_dic[each_col][i] = res[i]
     return input_dic
@@ -263,6 +267,7 @@ def generate_output(inputdict, path, options):
 
     if need_rea == 'yes':
         input_dic = reagent_sub(input_dic)
+        x = 1
         if need_is == 'yes':
             write_data(input_dic, workbook, 'IS_REA', 'IS Normalised, Reagent Blank Subtracted Data', 1)
             stats(input_dic, workbook, 'CV_IS_REA', 'CVs after IS Normalised and Reagent Blank Subtraction')
