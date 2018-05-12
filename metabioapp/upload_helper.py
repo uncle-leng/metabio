@@ -9,6 +9,11 @@ from .new_conc import generate_output
 def valid_file_type(value):
     if value.name.split('.')[-1] != 'csv':
         raise ValidationError('Invalid File Type: %(value)s', params={'value': value},)
+def illegal_char(str_list, string):
+    for each in str_list:
+        if each in string:
+            return True
+    return False
 
 
 def is_number(s):
@@ -40,6 +45,10 @@ def valid_file(file_path):
                     or not is_number(all_data[i][5]):
                 return [False, 'concentration, std_replicate and NF should be integers, id and Group should be strings']
             for j in range(6, len(all_data[0])):
+                if illegal_char(["\\", "^", "$", "*", "?", ".", "+", "(", ")", "[",
+                    "]", "|", "{", "}", "~", "`", "@", "#", "%", "&", "=", "'", "\"",
+                    ":", ";", "<", ">", ",", "/"],all_data[0][j]):
+                    return [False, 'illegal names in metabolite name ! only allow numbers, letters, dash and underscore']
                 if not is_number(all_data[i][j]):
                     return [False, 'metabolite data should be numbers']
             if all_data[i][3] == 'S':

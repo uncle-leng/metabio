@@ -66,14 +66,13 @@
                     {% if home %}
                         <!--<h1 class="introduction_text">Introduction</h1>-->
                         <div class="container">
-                            <div class="panel">
-                                <div class="panel-heading">About the system</div>
-                                <div class="panel-body">
+                            <div class="card text-white bg-dark mb-3">
+                                <h2 class="card-header">About the system</h2>
+                                <div class="card-body">
                                     <p>We present an open-source, web-based software tool that allows users to efficiently calculate the concentration values of features in mass spectrometry data through visualising and defining calibration curves based on several adjustable parameters. MASTR-Quant presents the user options of inputting data in a .csv format, including and excluding data points in order to define the linear or quadratic calibration range. The tool also includes options to assign individual internal standards to specific analytes, to apply weighting factors, background subtraction and dilution ratios. In addition, the tool allows normalization of the data based on internal standards and other external measurements. MASTR-Quant also includes the option of assessing quality of the data through the calculation of coefficient of variation values of each sample group. The final output is downloadable as an excel file with multiple sheets containing detailed results of the individual steps involved in the calculation process.</p>
                                 </div>
                             </div>
                         </div>
-                        <h2 class="introduction_text">lorem epsum</h2>
                         <div class="container">
                             <div class="row">
                                 <form class="col-md-4 offset-2" name="download_sample" method="post">
@@ -93,7 +92,6 @@
 
                     {% if upload %}
                          <h1 class="introduction_text">Text</h1>
-                         <h2 class="introduction_text">lorem epsum</h2>
 
                          <form name="try" method="post">
                             {% csrf_token %}
@@ -926,6 +924,7 @@
         }
         function fill_IS_select_table(originData) {
             var count = 0;
+
             for (var each in originData) {
                 if (start_with(each, 'IS')) {
                     //IS_select[each] = originData[each];
@@ -984,7 +983,7 @@
             return true;
         }
 
-        /*
+
         function escapeJquery(srcString) {
             var escapseResult = srcString;
             var jsSpecialChars = ["\\", "^", "$", "*", "?", ".", "+", "(", ")", "[",
@@ -1002,7 +1001,7 @@
             }
             return escapseResult;
         }
-        */
+
     </script>
 
 
