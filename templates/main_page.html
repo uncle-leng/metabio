@@ -11,7 +11,7 @@
 
     <link href="https://fonts.googleapis.com/css?family=PT+Serif" rel="stylesheet">
     <link rel="stylesheet" href="//cdn.datatables.net/1.10.16/css/jquery.dataTables.min.css">
-
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <meta charset="UTF-8">
     <script type="text/javascript" src="../static/js/echarts.js"></script>
     <script type="text/javascript" src="../static/js/jquery-3.2.1.js"></script>
@@ -253,6 +253,7 @@
                                         <!--</div>-->
 
                                         <button type="button" id="confirm_regression" class="btn btn-outline-danger" style="font-size: x-small">confirm<br>regression</button>
+                                        <img id="check_icon" src="{% static 'img/baseline_done_black_18dp.png' %}" style="visibility: hidden"></img>
                                 </div>
                                     <div id="chart"></div>
                                     <div>
@@ -277,6 +278,7 @@
     <script type="text/javascript">
         var myChart = echarts.init(document.getElementById('chart'), '', {devicePixelRatio: 2});
         var selected = {};
+        var finalized_metabolite = {};
         var checkboxes = {};
         var two_dimen_data = [];
         var option;
@@ -424,10 +426,17 @@
                 var tmp = '#' + IS_select[dataY];
                 $(tmp).click();
             }
+
             var cur_metabolo = get_selected_metabolo();
             var cur_method = regression_options[get_selected_metabolo()][0];
             var cur_origin = regression_options[get_selected_metabolo()][1];
             var cur_weight = regression_options[get_selected_metabolo()][2];
+            if (finalized_metabolite.hasOwnProperty(get_selected_metabolo()) && finalized_metabolite[get_selected_metabolo()]) {
+                $('#check_icon').css("visibility", "visible");
+            }
+            else {
+                $('#check_icon').css("visibility", "hidden");
+            }
             $('#regression_method').val(cur_method);
             $('#regression_origin').val(cur_origin);
             $('#regression_weight').val(cur_weight);
@@ -484,6 +493,8 @@
             var origin = $('#regression_origin').val();
             var weight = $('#regression_weight').val();
             regression_options[get_selected_metabolo()] = [method, origin, weight];
+            finalized_metabolite[get_selected_metabolo()] = true;
+            $('#check_icon').css("visibility", "visible");
             alert('confirmed regression options to ' + get_selected_metabolo());
         });
         $(function () {
@@ -875,13 +886,27 @@
             var data_set = [];
             for (var i = 0; i < cur_csv['Concentration'].length; i++) {
                 if (cur_csv['Group'][i] == 'S') {
-                    id.push(cur_csv['id'][i]);
-                    concentration.push(cur_csv['Concentration'][i]);
-                    resp.push(cur_csv[get_selected_metabolo()][i].toFixed(2));
+                    var cur_select_index = i.toString() + ',' + get_selected_metabolo();
+                    if ( !(selected.hasOwnProperty(cur_select_index)) || !selected[cur_select_index]) {
+                        id.push(cur_csv['id'][i]);
+                        concentration.push(cur_csv['Concentration'][i]);
+                        resp.push(cur_csv[get_selected_metabolo()][i].toFixed(2));
+                    }
+                    else {
+                        id.push(cur_csv['id'][i]);
+                        concentration.push('-');
+                        resp.push('-');
+                    }
                 }
             }
             for (var j = 0; j < id.length; j++) {
-                acc.push((100 * (resp[j] / concentration[j])).toFixed(2).toString() + '%');
+                var cur_select_index = j.toString() + ',' + get_selected_metabolo();
+                if ( !(selected.hasOwnProperty(cur_select_index)) || !selected[cur_select_index]) {
+                    acc.push((100 * (resp[j] / concentration[j])).toFixed(2).toString() + '%');
+                }
+                else {
+                    acc.push('-')
+                }
             }
             for (var k = 0; k < id.length; k++) {
                 var tmp = [];
