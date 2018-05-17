@@ -495,6 +495,8 @@
             regression_options[get_selected_metabolo()] = [method, origin, weight];
             finalized_metabolite[get_selected_metabolo()] = true;
             $('#check_icon').css("visibility", "visible");
+            var id = "#" + get_selected_metabolo();
+            $(id).css('color', "green");
             alert('confirmed regression options to ' + get_selected_metabolo());
         });
         $(function () {
@@ -1007,8 +1009,6 @@
             }
             return true;
         }
-
-
         function escapeJquery(srcString) {
             var escapseResult = srcString;
             var jsSpecialChars = ["\\", "^", "$", "*", "?", ".", "+", "(", ")", "[",
