@@ -17,6 +17,8 @@ def normalise_self(is_list):
         is_list[i] /= min_val
 
 def cal_equation(y, equation, origin):
+    if y == 0:
+        return 0
     if origin == 'default':
         if len(equation) == 2:
             return (y - equation[0]) / equation[1]

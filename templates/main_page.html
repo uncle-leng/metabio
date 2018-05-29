@@ -25,8 +25,8 @@
 <body style="font-family: 'PT Serif', serif">
 <!--<div id="particles"> </div>-->
     <div id="header_wrapper">
-        <div class="jumbotron jumbotron-fluid" style="background-color: #ce8554;">
-            <h1 class="display-4" style=" text-align: center;background-color: #ce8554">Mastr-Quant</h1>
+        <div class="jumbotron jumbotron-fluid" style="background-color: #428ff4;">
+            <h1 class="display-4" style=" text-align: center;background-color: #428ff4">Mastr-Quant</h1>
             <p style="text-align: center; font-size: 120%">A web interface for the quantitation of Mass Spectrometry-based data</p>
         </div>
 
@@ -37,11 +37,9 @@
          {% if home %}
 
             <nav class="navbar navbar-dark">
-
                 <a class="nav-link active" href="" style="color: white">Home</a>
                 <a class="nav-link disabled" href="#">Upload</a>
                 <a class="nav-link disabled" href="#">Visualization</a>
-
             </nav>
          {% endif %}
 
@@ -66,33 +64,48 @@
         <div class="right" style="color: #1b1e21">
                     {% if home %}
                         <!--<h1 class="introduction_text">Introduction</h1>-->
-                        <div class="container">
-                            <div class="card text-white bg-dark mb-3">
+                        <div class="container" style="margin-top: -100px">
+                            <div class="card mb-3">
                                 <h2 class="card-header">About the system</h2>
                                 <div class="card-body">
-                                    <p>We present an open-source, web-based software tool that allows users to efficiently calculate the concentration values of features in mass spectrometry data through visualising and defining calibration curves based on several adjustable parameters. MASTR-Quant presents the user options of inputting data in a .csv format, including and excluding data points in order to define the linear or quadratic calibration range. The tool also includes options to assign individual internal standards to specific analytes, to apply weighting factors, background subtraction and dilution ratios. In addition, the tool allows normalization of the data based on internal standards and other external measurements. MASTR-Quant also includes the option of assessing quality of the data through the calculation of coefficient of variation values of each sample group. The final output is downloadable as an excel file with multiple sheets containing detailed results of the individual steps involved in the calculation process.</p>
+                                    <p style="text-align: left; font-size: medium">We present an open-source, web-based software tool that allows users to efficiently calculate the concentration values of features in mass spectrometry data through visualising and defining calibration curves based on several adjustable parameters. MASTR-Quant presents the user options of inputting data in a .csv format, including and excluding data points in order to define the linear or quadratic calibration range. The tool also includes options to assign individual internal standards to specific analytes, to apply weighting factors, background subtraction and dilution ratios. In addition, the tool allows normalization of the data based on internal standards and other external measurements. MASTR-Quant also includes the option of assessing quality of the data through the calculation of coefficient of variation values of each sample group. The final output is downloadable as an excel file with multiple sheets containing detailed results of the individual steps involved in the calculation process.</p>
                                 </div>
                             </div>
                         </div>
                         <div class="container">
-                            <div class="row">
-                                <form class="col-md-4 offset-2" name="download_sample" method="post">
+                            <!--<div class="row"> -->
+                            <div class="card mb-3">
+                                <h2 class="card-header">Upload</h2>
+
+                                <form name="try" method="post">
                                     {% csrf_token %}
-                                    <input type="text" value="download_sample" name="download_sample" style="display: none">
-                                    <input type="submit" id="download_sample" value="download sample file" class="btn btn-outline-danger">
+                                    <input type="text" value="try" name="try" style="display: none">
+                                    <input type="submit" value="Try the system using a sample file" class="btn btn-outline-danger" style="margin-top: 20px">
                                 </form>
 
-                                <form class="col-md-4" name="upload_your_own_file" method="post">
+                                <form name="download_sample" method="post">
                                     {% csrf_token %}
-                                    <input type="text" value="upload_your_own_file" name="upload_your_own_file" style="display: none">
-                                    <input type="submit" id="upload_your_own_file" value="upload your own file" class="btn btn-outline-danger">
+                                    <input type="text" value="download_sample" name="download_sample" style="display: none">
+                                    <input type="submit" id="download_sample" value="download a template file" class="btn btn-outline-danger"  style="margin-top: 20px">
                                 </form>
+
+
+
+                                <form name="upload_your_own_file" method="post">
+                                    {% csrf_token %}
+                                    <input type="text" value="upload_your_own_file" name="upload_your_own_file" style="display: none;">
+                                    <input type="submit" id="upload_your_own_file" value="upload your file" class="btn btn-outline-danger"  style="margin-top: 20px; margin-bottom: 20px">
+                                </form>
+
+
+
+
                             </div>
                         </div>
                     {% endif %}
 
                     {% if upload %}
-                         <h1 class="introduction_text">Try our sample file</h1>
+                         <!--<h1 class="introduction_text">Try our sample file</h1>
 
                          <form name="try" method="post">
                             {% csrf_token %}
@@ -100,9 +113,9 @@
                             <input type="submit" value="try" class="btn btn-outline-danger">
                          </form>
 
-                        <h1 class="introduction_text"><br /> OR <br /></h1>
+                        h1 class="introduction_text"><br /> OR <br /></h1>-->
 
-                        <h1 class="introduction_text">Upload your own file</h1>
+                        <h1 class="introduction_text" style="margin-top: -100px">Upload your own file</h1>
 
                         <div class="form-group">
 
@@ -129,6 +142,25 @@
                             </form>
 
                          </div>
+
+                        <div class="card mb-3">
+                                <h2 class="card-header">Upload Notes</h2>
+                                <div class="card-body">
+                                    <p style="text-align: left; font-size: medium">
+                                        * Download the template csv file and update your data in it. <br/>
+                                        * Make sure there are no spaces in the metabolite names. <br/>
+                                        * The Standard samples are named as 'S' in the 'Group' column.<br/>
+                                        * Reagent blank samples are named as 'R' in the 'Group' column.<br/>
+                                        * Enter 0 in the 'std_replicate' column if there are no replicates for Standards.<br/>
+                                        * Enter 0 in the 'Concentration' column for all samples except the Standards.<br/>
+                                        * Enter 1 in the 'NF' (normalising factor) if there are no external numerical measure to normalise to. <br/>
+                                        * Enter 1 if there is no dilution value.<br/>
+                                        * Label the internal standard columns with 'IS_xxxx', where xxxx is the name of the metabolite.<br/>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
                     {% endif %}
 
                     {% if visualization %}
@@ -179,7 +211,40 @@
 
                         </div>
 
-                        <div class="container" style="margin-left: 0; margin-right: 0">
+                        <div class="card" style="margin-top: -100px">
+                          <div class="card-header">
+                            How to use the system
+                          </div>
+
+                        </div>
+
+                        <div style="height: 200px; width: 90%; overflow-y: scroll; border: #1b1e21; margin-left: auto; margin-right: auto">
+                            <p style="text-align: left; font-size: medium"><b>Step 1</b><br/>
+
+Select the metabolite to visualize its concentration curve. Data points on the graph can be selected or deselected by clicking on them. The calculated concentrations are reflected in the table dynamically upon selection/deselection.<br />
+
+                                  <b>Step 2</b><br />
+
+Select an internal standard and assign to the metabolite by clicking on "assign". Clicking on an internal standard changes the graph to show the values after internal standard normalisation.<br />
+
+If a single internal standard needs to be assigned to all metabolties, click on "assign all".<br />
+
+The assigned internal standards to metabolites can be reset by clicking on "cancel all".<br />
+
+All along this process, data points on the graph can be selected or deselected by clicking on them.The calculated concentrations are reflected in the table dynamically upon selection/deselection.<br />
+
+                                  <b>Step 3</b><br />
+
+Finalise the concentration curve by setting the parameter "Type", "Origin" and "Weight" and click "Confirm Regression"<br />
+Clicking on "RB Subtraction" shows the graph after subtracting the reagent blank.<br />
+
+                                  <b>Step 4</b><br />
+
+Finalise the data points for each metabolite and assign internal standard if any.<br />
+Click on "Confirm" to generate the output file.<br /></p></p>
+                        </div>
+
+                        <div class="container" style="margin-left: 0; margin-right: 0; margin-top: 20px">
                             <div class="row">
 
                                 <div class="col-2" id="dataY_wrapper">
@@ -219,7 +284,7 @@
                                         </table>
                                         <input type="button" id="assign" value="assign" class="btn btn-outline-success">
                                         <input type="button" id="assign_all" value="assign all" class="btn btn-outline-warning" style="margin-top: 20px">
-                                        <input type="button" id="cancel_all" value="cancel all" class="btn btn-outline-danger" style="margin-top: 20px">
+                                        <input type="button" id="cancel_all" value="reset all" class="btn btn-outline-danger" style="margin-top: 20px">
                                 </div>
                                 <div class="col-8" id="chart_wrapper">
 
@@ -249,7 +314,7 @@
                                             <span class="checkbox-icon-wrapper">
                                               <span class="checkbox-icon glyphicon glyphicon-ok"></span>
                                             </span>
-                                            RBS
+                                            RB subtraction
                                           </label>
                                         <!--</div>-->
 
@@ -266,7 +331,7 @@
                 </div>
                 </div>
        <nav class="navbar fixed-bottom navbar-light bg-white bg-trans">
-        <a class="navbar-brand" href="#">Contact: Dr. Saravanan Dayalan, sdayalan@unimelb.edu.au</a>
+        <a class="navbar-brand" href="#" style="font-size: small">Contact: Dr. Saravanan Dayalan, sdayalan@unimelb.edu.au</a>
     </nav>
 
 
@@ -368,6 +433,11 @@
             //var new_data = originData_to_checkboxData(data, checkboxes);
             var dataY = get_selected_metabolo();
             draw_chart(data, 'Concentration', dataY);
+        });
+
+        $('#new_upload').on('click', function() {
+            alert('asdasd');
+            $('#upload_your_own_file').click();
         });
         $('#show_result').on('click', function() {
             var IS_nor;
