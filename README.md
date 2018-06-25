@@ -1,1 +1,3 @@
-# metabio
+# Mastr-Quant
+MASTR-Quant allows the user to import data from Gas Chromatography Mass Spectrometry (GC-MS) or Liquid Chromatography Mass Spectrometry (LC-MS) platforms with either full scan or multiple reaction monitoring (MRM) data. the advantages of MASTR-Quant include that it is freely available, easy to use through a web interface and can import data from different instrument platforms. It is also transparent in the underlying calculations and provides users complete control over the setting of these parameters. MASTR-Quant also overcomes the disadvantage of manual calculations in spreadsheets, which are known to be time consuming and error-prone. MASTR-Quant therefore offers a fast, efficient and reproducible method of calculating concentrations of analytes. The system is expected to be continued to support the need of Metabolomics Australia.
+
